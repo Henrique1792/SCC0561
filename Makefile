@@ -1,6 +1,5 @@
 CC = gcc
-SRCS = bitmap.c pixel.c utils.c
-MAIN_SRC = main.c
+SRCS = main.c RLE.c bitmap.c pixel.c utils.c
 TGT = T1
 COLORS = red.bmp green.bmp blue.bmp bw.bmp
 OBJ_FLAGS = -Wall -Wextra -g -c

@@ -1,13 +1,16 @@
-#include "utils.h"
-#include "pixel.h"
-#include "bitmap.h"
+#include "RLE.h"
 
 #define RED "red.bmp"
 #define GREEN "green.bmp"
 #define BLUE "blue.bmp"
 
-int main(int argc, char *argv[]){
 
+int main(int argc, char *argv[]){
+	unsigned char *rleInputVector = NULL;
+	int *rleRepetitionVector = NULL;
+
+// rle input vector
+	int i, colors;
 
 //FILES section
 	FILE *src;
@@ -32,7 +35,7 @@ int main(int argc, char *argv[]){
 	PIXEL_T *img = (PIXEL_T *)malloc(((bmpHeader->biWidth)*(bmpHeader->biHeight))*sizeof(PIXEL_T));
 
 //Reload img postion and loading bmp to img
-	BEGINBMP(src);
+	//BEGINBMP(src);
 	loadBMP(bmpHeader, src, img);
 
 	//set it in dark mode
@@ -43,9 +46,15 @@ int main(int argc, char *argv[]){
 	writeBitmapHeader(bmpHeader, bw);
 	writeBMP(bmpHeader, img, bw);
 	
+	RLE_preparation(img, (bmpHeader->biWidth)*(bmpHeader->biHeight),
+					&rleInputVector, &rleRepetitionVector, &colors);
+
 
 //free bitmapHeader
 	freeBitmapHeader(&bmpHeader);
+
+	free(rleInputVector);
+	free(rleRepetitionVector);
 
 //deallocate img
 	free(img);

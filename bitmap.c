@@ -110,6 +110,7 @@ void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw){
 	int content = (src->biWidth * src->biHeight);
 	int i;
 	unsigned char tmp[3];
+	rewind(raw);
 	BEGINBMP(raw);
 
 	for(i = content ; i >= 0; i--){
