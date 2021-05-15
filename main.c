@@ -6,8 +6,6 @@
 #define GREEN "green.bmp"
 #define BLUE "blue.bmp"
 
-
-
 int main(int argc, char *argv[]){
 
 
@@ -37,7 +35,7 @@ int main(int argc, char *argv[]){
 	BEGINBMP(src);
 	loadBMP(bmpHeader, src, img);
 
-	//set it in dank mode
+	//set it in dark mode
 	WImg(bmpHeader, img);
 	 
 
@@ -52,6 +50,7 @@ int main(int argc, char *argv[]){
 //deallocate img
 	free(img);
 	fclose(bw);
+	fclose(src);
 
 	return EXIT_SUCCESS;
 }
