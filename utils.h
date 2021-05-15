@@ -33,8 +33,12 @@ unsigned int   biClrImportant;  /* Number of important colors */
 
 }BitmapHeader;
 
+//image stuff
 void WImg(BitmapHeader *bmpHeader, PIXEL_T *src);
 
 
+
+//util quicksorting colors
+void quicksortColors(unsigned char *colors, int *repetitions, int len);
 
 #endif

@@ -18,9 +18,17 @@ static int colorRepetitions[256];
  *	@return none.
 */
 
-void RLE_preparation(PIXEL_T *img, int imgSize){
+void RLE_preparation(PIXEL_T *img, int imgSize, 
+		unsigned char * rleInputVector, int * rleRepetitionVector){
+
 	int i;
-	if(img == NULL || imgSize) return;
+	int colorsUsed = 0;
+
+	if(img == NULL || 
+	   imgSize <=0 ||
+	   rleInputVector != NULL || 
+	   rleRepetitionVector != NULL) return;
+
 	//initialize vectors
 	
 
@@ -34,13 +42,38 @@ void RLE_preparation(PIXEL_T *img, int imgSize){
 // Remember! This is working for an WB image!!!
 // We need to consider other channels when dealing with other tones
 	for(i = 0; i < imgSize ; i++){
-		colorRepetitions[img->R]++;
+		colorRepetitions[(int)img->R]++;
 	}
 	
-//dump colors with no ocurrence in the end of the vector
-	for(i = 0 ; i <imgSize ; i++){
+//dump colors with no ocurrence 
+	for(i = 0 ; i < imgSize ; i++){
 		if(colorRepetitions[i]==0)
 			colorValues[i] = colorRepetitions[i] = UNUSED;
 	}
+
+
+//we'll allocate a new vector with used colors
+	for(i = 0 ; i < MAX_TONALITIES ; i++){
+		if(colorRepetitions[i]!=UNUSED)	
+			colorsUsed++;
+	}
+
+	rleInputVector = (unsigned char *)malloc(colorsUsed*sizeof(unsigned char));
+	rleRepetitionVector = (int *)malloc(colorsUsed*sizeof(int));
+
+	int j=0;	
+	for(i = 0 ; i < MAX_TONALITIES ; i++){
+		if(colorRepetitions[i]!=UNUSED){
+			rleInputVector[j]=colorValues[i];
+			rleRepetitionVector[j]=colorRepetitions[j];
+			++j;
+		}
+	}
+
+	//We need to sort them and send it back to our callee
+	quicksortColors(rleInputVector, rleRepetitionVector, colorsUsed);
+
 }
 
+void RLE_workout(){
+}
