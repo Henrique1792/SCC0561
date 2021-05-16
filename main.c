@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
 	int *rleRepetitionVector = NULL;
 
 // rle input vector
-	int i, colors;
+	int colors;
 
 //FILES section
 	FILE *src;
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 	PIXEL_T *img = (PIXEL_T *)malloc(((bmpHeader->biWidth)*(bmpHeader->biHeight))*sizeof(PIXEL_T));
 
 //Reload img postion and loading bmp to img
-	//BEGINBMP(src);
+	BEGINBMP(src, bmpHeader->bfOffBits);
 	loadBMP(bmpHeader, src, img);
 
 	//set it in dark mode

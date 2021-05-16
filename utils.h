@@ -6,7 +6,7 @@
 #include <string.h>
 #include "pixel.h"
 
-#define BEGINBMP(src)  fseek(src, 53, SEEK_SET);
+#define BEGINBMP(src, value)  fseek(src, value, SEEK_SET);
 #define ENDBMP(src)	fseek(src, 0, SEEK_END);
 
 //Bitmap Content
@@ -37,8 +37,10 @@ unsigned int   biClrImportant;  /* Number of important colors */
 void WImg(BitmapHeader *bmpHeader, PIXEL_T *src);
 
 
-
 //util quicksorting colors
+//it sorts both repetition and color vector
+//
+//This trick will be relevant during colored img compression!
 void quicksortColors(unsigned char *colors, int *repetitions, int len);
 
 #endif

@@ -111,7 +111,7 @@ void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw){
 	int i;
 	unsigned char tmp[3];
 	rewind(raw);
-	BEGINBMP(raw);
+	BEGINBMP(raw, src->bfOffBits);
 
 	for(i = content ; i >= 0; i--){
 		tmp[0] = img[i].B; 
