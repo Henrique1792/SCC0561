@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
 	int *rleRepetitionVector = NULL;
 
 // rle input vector
-	int colors;
+	//int colors;
 
 //FILES section
 	FILE *src;
@@ -46,13 +46,19 @@ int main(int argc, char *argv[]){
 	writeBitmapHeader(bmpHeader, bw);
 	writeBMP(bmpHeader, img, bw);
 	
-	RLE_preparation(img, (bmpHeader->biWidth)*(bmpHeader->biHeight),
-					&rleInputVector, &rleRepetitionVector, &colors);
+	//RLE_preparation(img, (bmpHeader->biWidth)*(bmpHeader->biHeight),
+	//				&rleInputVector, &rleRepetitionVector, &colors);
 
+
+	Table_t * output = RLE_workout(img,(bmpHeader->biWidth)*(bmpHeader->biHeight));
+	GravaBit(output, (bmpHeader->biWidth)*(bmpHeader->biHeight));
 
 //free bitmapHeader
 	freeBitmapHeader(&bmpHeader);
 
+
+//deallocate used structures
+	free(output);
 	free(rleInputVector);
 	free(rleRepetitionVector);
 

@@ -37,6 +37,17 @@ unsigned int   biClrImportant;  /* Number of important colors */
 void WImg(BitmapHeader *bmpHeader, PIXEL_T *src);
 
 
+
+typedef struct 
+{
+  unsigned int unicode;
+  unsigned char unicodeSize;
+  
+}Table_t;
+
+int decimal_to_binary(int Num);
+void GravaBit(Table_t *TabCodigos, int tam);
+
 //util quicksorting colors
 //it sorts both repetition and color vector
 //
