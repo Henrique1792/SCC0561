@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "pixel.h"
 
 #define BEGINBMP(src, value)  fseek(src, value, SEEK_SET);
 #define ENDBMP(src)	fseek(src, 0, SEEK_END);
+#define MAX_TONALITIES 256 
 
 //Bitmap Content
 typedef struct BitmapHeader{
@@ -35,8 +37,6 @@ unsigned int   biClrImportant;  /* Number of important colors */
 
 //image stuff
 void WImg(BitmapHeader *bmpHeader, PIXEL_T *src);
-
-
 
 typedef struct 
 {
