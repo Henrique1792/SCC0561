@@ -83,5 +83,5 @@ void RLE_preparation(PIXEL_T *img, int imgSize,
 	*colors = colorsUsed;
 }
 
-Table_t *RLE_workout(PIXEL_T *img, int imgSize){
-}
+//Table_t *RLE_workout(PIXEL_T *img, int imgSize){
+//}

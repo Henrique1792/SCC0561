@@ -48,6 +48,8 @@ typedef struct
 int decimal_to_binary(int Num);
 void GravaBit(Table_t *TabCodigos, int tam);
 
+void DCT(unsigned char **m);
+void IDCT(unsigned char **m);
 //util quicksorting colors
 //it sorts both repetition and color vector
 //

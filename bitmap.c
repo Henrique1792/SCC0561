@@ -122,10 +122,27 @@ void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw){
 
 }
 
-void WImg(BitmapHeader *bmpHeader, PIXEL_T *src){
-	if (src == NULL || bmpHeader == NULL) return;
 
-	for(int i=0; i < ((bmpHeader->biWidth)*(bmpHeader->biHeight)); i++)
-		src[i].B = src[i].G = src[i].R;
+void bmpSlashSquares(PIXEL_T *tgt, int width, int height){
 
+	int nSquareW, nSquareH, k;
+	nSquareW = nSquareH = 0;
+
+	for(k = 0; k < width*height; k++){
+		if(k % 8 == 0){
+			nSquareW++;
+
+		}else{
+
+			if(k % width == 0){
+				nSquareW = 0;
+				nSquareH++;
+			}
+
+		}
+
+		tgt[k].nSquareW = nSquareW;
+		tgt[k].nSquareH = nSquareH;
+	}
 }
+

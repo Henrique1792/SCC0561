@@ -60,7 +60,7 @@ void GravaBit(Table_t *TabCodigos, int tam){ //Funcao para gravar os binários d
 
 
 //8x8 dct code, size not required
-double **DCT(double **m){
+void DCT(unsigned char **m){
 
 	int i, j, x, y;
 	double **res = (double **)malloc(8*sizeof(double *));
@@ -78,31 +78,35 @@ double **DCT(double **m){
 				cof = 1/(sqrt(2));
 
 			res[i][j] = 0;
-			for(x=0;x<8;x++){
-				for(y=0;y<8;y++)
-					res[i][j] += m[x][y]*(cos((((2*x)+1)*i*M_PI)/16))*(cos((((2*y)+1)*j*M_PI)/16));
+			for(x=0; x<8; x++){
+				for(y=0; y<8; y++)
+					res[i][j] += (double)(m[x][y])*(cos((((2*x)+1)*i*M_PI)/16))*(cos((((2*y)+1)*j*M_PI)/16));
 			}
 			res[i][j] *= 0.25*(cof*cof);
 		}
 
 	}
 
-	return res;
+	for(i=0; i<8; i++){
+		for(j = 0 ; j<8; j++)
+			m[i][j] = floor((unsigned char)(res[i][j]));
+	}
+
+	//don't forget to free this RES!
+
 }
 
-double **IDCT(double **m){
+void IDCT(unsigned char **m){
 
 	int i, j, x, y;
 	double **res = (double **)malloc(8*sizeof(double *));
 	double cof;
-	double tmp;
 
 
 	for(i=0;i<8;i++)
 		res[i] = (double *)malloc(8*sizeof(double));
 
 	for(i=0;i<8;i++){
-		tmp = 0;	
 		for(j=0;j<8;j++){
 			if((i == j) == 0)
 				cof = 1;
@@ -112,12 +116,18 @@ double **IDCT(double **m){
 			res[i][j] = 0;
 			for(x=0;x<8;x++){
 				for(y=0;y<8;y++)
-					res[i][j] += 0.25*(cof*cof)*m[x][y]*(cos((((2*x)+1)*i*M_PI)/16))*(cos((((2*y)+1)*j*M_PI)/16))
+					res[i][j] += 0.25*(cof*cof)*((double)m[x][y])*(cos((((2*x)+1)*i*M_PI)/16))*(cos((((2*y)+1)*j*M_PI)/16));
 			}
 		}
 	}
 
-	return res;
+	for(i=0; i<8; i++){
+		for(j = 0 ; j<8; j++)
+			m[i][j] = floor((unsigned char)(res[i][j]));
+	}
+
+	//don't forget to free this res matrix!
+
 }
 
 

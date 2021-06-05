@@ -11,5 +11,6 @@ void printBitmapHeader(BitmapHeader *tgt);
 void writeBitmapHeader(BitmapHeader *tgt, FILE *src);
 void loadBMP(BitmapHeader *src, FILE *raw, PIXEL_T *img);
 void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw);
+void bmpSlashSquares(PIXEL_T *tgt, int width, int height);
 
 #endif

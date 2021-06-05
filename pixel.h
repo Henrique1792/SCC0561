@@ -8,6 +8,10 @@ typedef struct PIXEL_T{
 	unsigned char R;
 	unsigned char G;
 	unsigned char B;
+
+	int nSquareW;
+	int nSquareH;
+
 }PIXEL_T;
 
 PIXEL_T *createPIXEL_T();
