@@ -88,9 +88,9 @@ int main(int argc, char *argv[]){
 
 
 	//declarations used
-	int *rleRepetitionVector = NULL;
 	int imgPosition;
 	int vectorSize;
+	int fullSquares;
 	char ***matrixR;
 	char ***matrixG;
 	char ***matrixB;
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
-	if(!strcmp(argv[3], "compression")){
+	if(!strcmp(argv[2], "compression")){
 	//BitmapHeader
 		BitmapHeader *bmpHeader = createBitmapHeader();
 		printf("FILE FOUND: %s\n", argv[1]);
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]){
 
 		//slashing our image into a vector of 8x8 matrix
 		bmpSlashSquares(img, bmpHeader->biWidth, bmpHeader->biHeight, 
-				vectorSize);
+				((bmpHeader->biWidth)*(bmpHeader->biHeight)), &fullSquares);
 		int i, j;
 
 		for(i=0 ; i < vectorSize; i++){
@@ -172,6 +172,7 @@ int main(int argc, char *argv[]){
 		}
 
 
+		i=0;
 		for(imgPosition = 0; 
 			imgPosition < ((bmpHeader->biWidth)*(bmpHeader->biHeight)); 
 			imgPosition++){
@@ -180,17 +181,17 @@ int main(int argc, char *argv[]){
 			matrixG[i][img[imgPosition].nSquareW][img[imgPosition].nSquareH] = img[imgPosition].G;
 			matrixB[i][img[imgPosition].nSquareW][img[imgPosition].nSquareH] = img[imgPosition].B;
 
-			if(imgPosition % 8 == 0){
-				if(i < vectorSize)
+			if(imgPosition % 64 == 0){
+				if(i < 7)
 					i++;
-				if(i == vectorSize)
+				else
 					i = 0;
 			}
 		}
 
 
 		//here we'll apply DCT in each 8x8 matrix
-		for(i = 0 ; i < vectorSize ; i++){
+		for(i = 0 ; i < fullSquares ; i++){
 			DCT(matrixR[i]);
 			DCT(matrixG[i]);
 			DCT(matrixB[i]);
@@ -200,7 +201,7 @@ int main(int argc, char *argv[]){
 		//quantization + zigzag scan!
 
 
-		for(int k=0; k < vectorSize; k++){
+		for(int k=0; k < fullSquares; k++){
 			for(i=0; i<8; i++){
 				for(j=0; j<8; j++){
 					matrixR[k][i][j] = matrixR[k][i][j] / qzTable[i][j];
@@ -215,7 +216,7 @@ int main(int argc, char *argv[]){
 		zzScanB = (char **)malloc(vectorSize*sizeof(char *));
 
 
-		for(i = 0; i < vectorSize ; i++){
+		for(i = 0; i < fullSquares ; i++){
 			zzScanR[i] = zigzagProcedure(matrixR[i]);
 			zzScanG[i] = zigzagProcedure(matrixG[i]);
 			zzScanB[i] = zigzagProcedure(matrixB[i]);
@@ -227,21 +228,21 @@ int main(int argc, char *argv[]){
 		//[0] positions: differ encoding
 		//[remaining] - RLE
 
-		rleVectorsR = (char **)malloc(vectorSize*sizeof(char *));
-		rleVectorsG = (char **)malloc(vectorSize*sizeof(char *));
-		rleVectorsB = (char **)malloc(vectorSize*sizeof(char *));
+		rleVectorsR = (char **)malloc(fullSquares*sizeof(char *));
+		rleVectorsG = (char **)malloc(fullSquares*sizeof(char *));
+		rleVectorsB = (char **)malloc(fullSquares*sizeof(char *));
 
-		for(i = 0; i < vectorSize ; i++){
+		for(i = 0; i < fullSquares ; i++){
 			rleVectorsR[i] = RLE_encoding(zzScanR[i], 64);
 			rleVectorsG[i] = RLE_encoding(zzScanG[i], 64);
 			rleVectorsB[i] = RLE_encoding(zzScanB[i], 64);
 		}
 
-		deltaInputR = (char *)malloc(vectorSize*sizeof(char));
-		deltaInputG = (char *)malloc(vectorSize*sizeof(char));
-		deltaInputB = (char *)malloc(vectorSize*sizeof(char));
+		deltaInputR = (char *)malloc(fullSquares*sizeof(char));
+		deltaInputG = (char *)malloc(fullSquares*sizeof(char));
+		deltaInputB = (char *)malloc(fullSquares*sizeof(char));
 
-		for(i=0 ; i<vectorSize;i++){
+		for(i=0 ; i<fullSquares;i++){
 			deltaInputR[i] = zzScanR[i][0];
 			deltaInputG[i] = zzScanG[i][0];
 			deltaInputB[i] = zzScanB[i][0];
@@ -258,13 +259,35 @@ int main(int argc, char *argv[]){
 
 		//standard stablishment:
 		//original BMPheader
-		//rleVectorB
 		//deltaB
-		//rleVectorG
 		//deltaG
-		//rleVectorR
 		//deltaR
+		//rleVectorsB
+		//rleVectorsG
+		//rleVectorsR
 
+		FILE *outfile = fopen("out.bin", "wb");
+		writeBitmapHeader(bmpHeader, outfile);	
+
+		GravaBit(outfile, deltaB, fullSquares);
+		printf("deltaB wrote\n");
+		GravaBit(outfile, deltaG, fullSquares);
+		printf("deltaG wrote\n");
+		GravaBit(outfile, deltaR, fullSquares);
+		printf("deltaR wrote\n");
+
+		
+		for(i=0; i<vectorSize; i++){
+			fwrite(rleVectorsB[i], sizeof(rleVectorsB), 1, outfile);
+		}
+
+		for(i=0; i<vectorSize; i++){
+			fwrite(rleVectorsG[i], sizeof(rleVectorsG), 1, outfile);
+		}
+
+		for(i=0; i<vectorSize; i++){
+			fwrite(rleVectorsR[i], sizeof(rleVectorsR), 1, outfile);
+		}
 
 
 		//writeBitmapHeader(bmpHeader, bw);
@@ -274,6 +297,7 @@ int main(int argc, char *argv[]){
 		//GravaBit(output, (bmpHeader->biWidth)*(bmpHeader->biHeight));
 
 	//free content
+	fclose(outfile);
 	
 	//delta
 		free(deltaB);
@@ -324,13 +348,6 @@ int main(int argc, char *argv[]){
 		free(matrixG);
 		free(matrixB);
 
-		free(deltaB);
-		free(deltaG);
-		free(deltaR);
-
-		//free(output);
-		free(rleInputVector);
-		free(rleRepetitionVector);
 
 	//bitmapHeader
 		freeBitmapHeader(&bmpHeader);
@@ -339,7 +356,7 @@ int main(int argc, char *argv[]){
 		free(img);
 		fclose(src);
 	}else{
-		if(!strcmp(argv[3],"decompression")){
+		if(!strcmp(argv[2],"decompression")){
 			printf("Dummy content here\n");
 		}
 	}

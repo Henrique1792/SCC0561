@@ -16,16 +16,13 @@ int decimal_to_binary(int Num){ //função de transformacao de um decimal (negat
 }
 
 
-void GravaBit(Table_t *TabCodigos, int tam){ 
-	FILE *p;
+void GravaBit(FILE *output,Table_t *TabCodigos, int tam){ 
     char* str = (char*)malloc(10*sizeof(char)); 
 
-    p = fopen( "out.bin" , "a" );
     for (int i = 0; i < tam; ++i) {
         sprintf(str, "%d", TabCodigos[i].unicode);
-        fwrite(str , 1 , sizeof(str) , p);
+        fwrite(str , 1 , sizeof(str) , output);
     }
-    fclose(p);
 	free(str);
 }
 
@@ -119,8 +116,9 @@ void IDCT(char **m){
 
 char *zigzagProcedure(char **tgt){
 
-	int i, j, k=0;
+	int i, j, k;
 
+	i = j = k = 0;
 	char *ret = (char *)malloc(64*sizeof(char));
 
 	do{

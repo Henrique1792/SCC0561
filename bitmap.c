@@ -124,26 +124,35 @@ void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw){
 
 
 void bmpSlashSquares(PIXEL_T *tgt, int width, int height,
-					int vectorSize){
+					int imgSize, int *fullSquares){
 
 	int nSquareW, nSquareH, k;
+	int nSquare = 0;
 	nSquareW = nSquareH = 0;
 
-	for(k = 0; k < vectorSize; k++){
+	//looping over img
+	for(k = 0; k < imgSize; k++){
 		if(k % 8 == 0){
 			nSquareW++;
+		}
 
-		}else{
+		if(k % width == 0){
+			nSquareH++;
+		}
+		
 
-			if(k % width == 0){
-				nSquareW = 0;
-				nSquareH++;
-			}
+		if(nSquareW == 8)
+			nSquareW = 0;
 
+		if(nSquareH  == 8){
+			nSquare++;
+			nSquareH = 0;
 		}
 
 		tgt[k].nSquareW = nSquareW;
 		tgt[k].nSquareH = nSquareH;
 	}
+	*fullSquares = nSquare;
+
 }
 

@@ -46,7 +46,7 @@ typedef struct
 }Table_t;
 
 int decimal_to_binary(int Num);
-void GravaBit(Table_t *TabCodigos, int tam);
+void GravaBit(FILE *outfile, Table_t *TabCodigos, int tam);
 
 void DCT(char **m);
 void IDCT(char **m);
