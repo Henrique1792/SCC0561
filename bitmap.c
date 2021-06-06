@@ -123,12 +123,13 @@ void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw){
 }
 
 
-void bmpSlashSquares(PIXEL_T *tgt, int width, int height){
+void bmpSlashSquares(PIXEL_T *tgt, int width, int height,
+					int vectorSize){
 
 	int nSquareW, nSquareH, k;
 	nSquareW = nSquareH = 0;
 
-	for(k = 0; k < width*height; k++){
+	for(k = 0; k < vectorSize; k++){
 		if(k % 8 == 0){
 			nSquareW++;
 

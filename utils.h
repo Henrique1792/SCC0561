@@ -50,6 +50,10 @@ void GravaBit(Table_t *TabCodigos, int tam);
 
 void DCT(unsigned char **m);
 void IDCT(unsigned char **m);
+
+unsigned char *zigzagProcedure(unsigned char **tgt);
+
+
 //util quicksorting colors
 //it sorts both repetition and color vector
 //

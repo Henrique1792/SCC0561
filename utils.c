@@ -59,7 +59,13 @@ void GravaBit(Table_t *TabCodigos, int tam){ //Funcao para gravar os binários d
 }
 
 
-//8x8 dct code, size not required
+/*
+ *
+ * DCT section
+ *
+ *
+*/
+
 void DCT(unsigned char **m){
 
 	int i, j, x, y;
@@ -131,4 +137,61 @@ void IDCT(unsigned char **m){
 }
 
 
+
+/*
+ *
+ * zigzag procedure
+ *
+ *
+*/
+
+
+unsigned char *zigzagProcedure(unsigned char **tgt){
+
+	int i, j, k=0;
+
+	unsigned char *ret = (unsigned char *)malloc(64*sizeof(unsigned char));
+
+	do{
+		ret[k++] = tgt[i][++j];
+
+		for(i=i+1,j=j-1;j>=0;j--,i++)
+			ret[k++] = tgt[i][j];
+		i--;
+		j++;
+
+		if(i == 7)
+			break;
+
+		ret[k++] = tgt[++i][j];
+
+		for(i=i-1,j=j+1; i >= 0; i--, j++)
+			ret[k++] = tgt[i][j];
+
+		i++;
+		j--;
+	}while( (i+j) <= 8);
+	do
+	{
+		ret[k++] = tgt[i][++j];
+
+		for(i=i-1,j=j+1; j<8; j++,i--)
+			ret[k++] = tgt[i][j];
+		i++;
+		j--;
+
+		if(j == 7 && i == 7)
+			break;
+		
+		ret[k++] = tgt[++i][j];
+		
+		for(i=i+1,j=j-1;i<8;i++,j--)
+			ret[k++] = tgt[i][j];
+
+		i--;
+		j++;
+	}while(i < 8 || j < 8);
+
+	return ret;
+}
 
