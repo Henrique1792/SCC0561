@@ -1,34 +1,5 @@
 #include "utils.h"
 
-void quicksortColors(unsigned char *colors, int *repetitions, int len){
-  if (len < 2) return;
- 
-  int pivot = repetitions[len / 2];
-  int tempR;
-  unsigned char tempC;
- 
-  int i, j;
-  for (i = 0, j = len - 1; ; i++, j--) {
-    while (repetitions[i] < pivot) i++;
-    while (repetitions[j] > pivot) j--;
- 
-    if (i >= j) break;
- 
-	//swapping repetitions vector
-    tempR = repetitions[i];
-	tempC = colors[i];
-
-    repetitions[i] = repetitions[j];
-    repetitions[j] = tempR;
-
-    colors[i] = colors[j];
-    colors[j] = tempC;
-  }
- 
-  quicksortColors(colors, repetitions, i);
-  quicksortColors(colors, repetitions + i, len - i);
-}
-
 
 int decimal_to_binary(int Num){ //função de transformacao de um decimal (negativo ou nao) para binário sem sinal
 
@@ -45,11 +16,11 @@ int decimal_to_binary(int Num){ //função de transformacao de um decimal (negat
 }
 
 
-void GravaBit(Table_t *TabCodigos, int tam){ //Funcao para gravar os binários definidos em categorias huffman em um arquivo 'out.bin' binário
+void GravaBit(Table_t *TabCodigos, int tam){ 
 	FILE *p;
-    char* str = (char*)malloc(10*sizeof(char)); //definindo uma nova variavel string para modificar o binario unsigned int e facilitar a escrita no arquivo
+    char* str = (char*)malloc(10*sizeof(char)); 
 
-    p = fopen( "out.bin" , "w" );
+    p = fopen( "out.bin" , "a" );
     for (int i = 0; i < tam; ++i) {
         sprintf(str, "%d", TabCodigos[i].unicode);
         fwrite(str , 1 , sizeof(str) , p);
@@ -150,7 +121,7 @@ char *zigzagProcedure(char **tgt){
 
 	int i, j, k=0;
 
-	unsigned char *ret = (unsigned char *)malloc(64*sizeof(unsigned char));
+	char *ret = (char *)malloc(64*sizeof(char));
 
 	do{
 		ret[k++] = tgt[i][++j];

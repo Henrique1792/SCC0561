@@ -1,18 +1,113 @@
 #include "RLE.h"
+#include "deltaEncoding.h"
 
 #define RED "red.bmp"
 #define GREEN "green.bmp"
 #define BLUE "blue.bmp"
 
+char qzTable[8][8];
+
+// setting qzTable values
+
+
 
 int main(int argc, char *argv[]){
-	unsigned char *rleInputVector = NULL;
+
+	qzTable[0][0] = 16;
+	qzTable[0][1] = 11;
+	qzTable[0][2] = 10;
+	qzTable[0][3] = 16;
+	qzTable[0][4] = 24;
+	qzTable[0][5] = 40;
+	qzTable[0][6] = 51;
+	qzTable[0][7] = 61;
+
+	qzTable[1][0] = 12;
+	qzTable[1][1] = 12;
+	qzTable[1][2] = 14;
+	qzTable[1][3] = 19;
+	qzTable[1][4] = 26;
+	qzTable[1][5] = 58;
+	qzTable[1][6] = 60;
+	qzTable[1][7] = 55;
+
+	qzTable[2][0] = 14;
+	qzTable[2][1] = 13;
+	qzTable[2][2] = 16;
+	qzTable[2][3] = 24;
+	qzTable[2][4] = 40;
+	qzTable[2][5] = 57;
+	qzTable[2][6] = 69;
+	qzTable[2][7] = 56;
+
+	qzTable[3][0] = 14;
+	qzTable[3][1] = 17;
+	qzTable[3][2] = 22;
+	qzTable[3][3] = 29;
+	qzTable[3][4] = 51;
+	qzTable[3][5] = 87;
+	qzTable[3][6] = 80;
+	qzTable[3][7] = 62;
+
+	qzTable[4][0] = 18;
+	qzTable[4][1] = 22;
+	qzTable[4][2] = 37;
+	qzTable[4][3] = 56;
+	qzTable[4][4] = 68;
+	qzTable[4][5] = 109;
+	qzTable[4][6] = 103;
+	qzTable[4][7] = 77;
+
+	qzTable[5][0] = 24;
+	qzTable[5][1] = 35;
+	qzTable[5][2] = 55;
+	qzTable[5][3] = 64;
+	qzTable[5][4] = 81;
+	qzTable[5][5] = 104;
+	qzTable[5][6] = 113;
+	qzTable[5][7] = 92;
+
+	qzTable[6][0] = 49;
+	qzTable[6][1] = 64;
+	qzTable[6][2] = 78;
+	qzTable[6][3] = 87;
+	qzTable[6][4] = 103;
+	qzTable[6][5] = 121;
+	qzTable[6][6] = 120;
+	qzTable[6][7] = 101;
+
+	qzTable[7][0] = 72;
+	qzTable[7][1] = 92;
+	qzTable[7][2] = 95;
+	qzTable[7][3] = 98;
+	qzTable[7][4] = 112;
+	qzTable[7][5] = 100;
+	qzTable[7][6] = 103;
+	qzTable[7][7] = 99;
+
+
+
+	//declarations used
 	int *rleRepetitionVector = NULL;
+	int imgPosition;
+	int vectorSize;
+	char ***matrixR;
+	char ***matrixG;
+	char ***matrixB;
+	char **zzScanR;
+	char **zzScanG;
+	char **zzScanB;
+	char **rleVectorsR;
+	char **rleVectorsG;
+	char **rleVectorsB;
+	char *deltaInputR; 
+	char *deltaInputG; 
+	char *deltaInputB; 
+	Table_t *deltaR;
+	Table_t *deltaG;
+	Table_t *deltaB;
 
-// rle input vector
-	//int colors;
 
-//FILES section
 	FILE *src;
 
 //names section
@@ -22,8 +117,6 @@ int main(int argc, char *argv[]){
 		printf("USAGE: <imgname||compressed_filename> <compression||decompression>\n");
 		exit(1);
 	}
-
-
 
 	if(!strcmp(argv[3], "compression")){
 	//BitmapHeader
@@ -56,10 +149,10 @@ int main(int argc, char *argv[]){
 		BEGINBMP(src, bmpHeader->bfOffBits);
 		loadBMP(bmpHeader, src, img);
 
-		int vectorSize = ((bmpHeader->biWidth/8)*(bmpHeader->biHeight/8));
-		char ***matrixR = (char ***)malloc(vectorSize*sizeof(char **));
-		char ***matrixG = (char ***)malloc(vectorSize*sizeof(char **));
-		char ***matrixB = (char ***)malloc(vectorSize*sizeof(char **));
+		vectorSize = ((bmpHeader->biWidth/8)*(bmpHeader->biHeight/8));
+		matrixR = (char ***)malloc(vectorSize*sizeof(char **));
+		matrixG = (char ***)malloc(vectorSize*sizeof(char **));
+		matrixB = (char ***)malloc(vectorSize*sizeof(char **));
 
 		//slashing our image into a vector of 8x8 matrix
 		bmpSlashSquares(img, bmpHeader->biWidth, bmpHeader->biHeight, 
@@ -78,7 +171,6 @@ int main(int argc, char *argv[]){
 				}
 		}
 
-		int imgPosition;
 
 		for(imgPosition = 0; 
 			imgPosition < ((bmpHeader->biWidth)*(bmpHeader->biHeight)); 
@@ -107,82 +199,6 @@ int main(int argc, char *argv[]){
 
 		//quantization + zigzag scan!
 
-		char qzTable[8][8];
-
-// setting qzTable values
-
-		qzTable[0][0] = 16;
-		qzTable[0][1] = 11;
-		qzTable[0][2] = 10;
-		qzTable[0][3] = 16;
-		qzTable[0][4] = 24;
-		qzTable[0][5] = 40;
-		qzTable[0][6] = 51;
-		qzTable[0][7] = 61;
-
-		qzTable[1][0] = 12;
-		qzTable[1][1] = 12;
-		qzTable[1][2] = 14;
-		qzTable[1][3] = 19;
-		qzTable[1][4] = 26;
-		qzTable[1][5] = 58;
-		qzTable[1][6] = 60;
-		qzTable[1][7] = 55;
-
-		qzTable[2][0] = 14;
-		qzTable[2][1] = 13;
-		qzTable[2][2] = 16;
-		qzTable[2][3] = 24;
-		qzTable[2][4] = 40;
-		qzTable[2][5] = 57;
-		qzTable[2][6] = 69;
-		qzTable[2][7] = 56;
-
-		qzTable[3][0] = 14;
-		qzTable[3][1] = 17;
-		qzTable[3][2] = 22;
-		qzTable[3][3] = 29;
-		qzTable[3][4] = 51;
-		qzTable[3][5] = 87;
-		qzTable[3][6] = 80;
-		qzTable[3][7] = 62;
-
-		qzTable[4][0] = 18;
-		qzTable[4][1] = 22;
-		qzTable[4][2] = 37;
-		qzTable[4][3] = 56;
-		qzTable[4][4] = 68;
-		qzTable[4][5] = 109;
-		qzTable[4][6] = 103;
-		qzTable[4][7] = 77;
-
-		qzTable[5][0] = 24;
-		qzTable[5][1] = 35;
-		qzTable[5][2] = 55;
-		qzTable[5][3] = 64;
-		qzTable[5][4] = 81;
-		qzTable[5][5] = 104;
-		qzTable[5][6] = 113;
-		qzTable[5][7] = 92;
-
-		qzTable[6][0] = 49;
-		qzTable[6][1] = 64;
-		qzTable[6][2] = 78;
-		qzTable[6][3] = 87;
-		qzTable[6][4] = 103;
-		qzTable[6][5] = 121;
-		qzTable[6][6] = 120;
-		qzTable[6][7] = 101;
-
-		qzTable[7][0] = 72;
-		qzTable[7][1] = 92;
-		qzTable[7][2] = 95;
-		qzTable[7][3] = 98;
-		qzTable[7][4] = 112;
-		qzTable[7][5] = 100;
-		qzTable[7][6] = 103;
-		qzTable[7][7] = 99;
-
 
 		for(int k=0; k < vectorSize; k++){
 			for(i=0; i<8; i++){
@@ -194,9 +210,9 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		char **zzScanR = (char **)malloc(vectorSize*sizeof(char *));
-		char **zzScanG = (char **)malloc(vectorSize*sizeof(char *));
-		char **zzScanB = (char **)malloc(vectorSize*sizeof(char *));
+		zzScanR = (char **)malloc(vectorSize*sizeof(char *));
+		zzScanG = (char **)malloc(vectorSize*sizeof(char *));
+		zzScanB = (char **)malloc(vectorSize*sizeof(char *));
 
 
 		for(i = 0; i < vectorSize ; i++){
@@ -208,26 +224,77 @@ int main(int argc, char *argv[]){
 		//RLE+huffman
 		
 		//Remember: 
-		//[0] positions: RLE
-		//[remaining] - differ encoding
+		//[0] positions: differ encoding
+		//[remaining] - RLE
+
+		rleVectorsR = (char **)malloc(vectorSize*sizeof(char *));
+		rleVectorsG = (char **)malloc(vectorSize*sizeof(char *));
+		rleVectorsB = (char **)malloc(vectorSize*sizeof(char *));
+
+		for(i = 0; i < vectorSize ; i++){
+			rleVectorsR[i] = RLE_encoding(zzScanR[i], 64);
+			rleVectorsG[i] = RLE_encoding(zzScanG[i], 64);
+			rleVectorsB[i] = RLE_encoding(zzScanB[i], 64);
+		}
+
+		deltaInputR = (char *)malloc(vectorSize*sizeof(char));
+		deltaInputG = (char *)malloc(vectorSize*sizeof(char));
+		deltaInputB = (char *)malloc(vectorSize*sizeof(char));
+
+		for(i=0 ; i<vectorSize;i++){
+			deltaInputR[i] = zzScanR[i][0];
+			deltaInputG[i] = zzScanG[i][0];
+			deltaInputB[i] = zzScanB[i][0];
+		}
 
 
+		deltaR = deltaEncoding(deltaInputR, vectorSize);
+		deltaG = deltaEncoding(deltaInputG, vectorSize);
+		deltaB = deltaEncoding(deltaInputB, vectorSize);
+
+		
 
 		//Write file
+
+		//standard stablishment:
+		//original BMPheader
+		//rleVectorB
+		//deltaB
+		//rleVectorG
+		//deltaG
+		//rleVectorR
+		//deltaR
+
+
+
 		//writeBitmapHeader(bmpHeader, bw);
 		//writeBMP(bmpHeader, img, bw);
-		
-		//RLE_preparation(img, (bmpHeader->biWidth)*(bmpHeader->biHeight),
-		//				jpeg compression divide file&rleInputVector, &rleRepetitionVector, &colors);
 
 
-		//Table_t * output = RLE_workout(img,(bmpHeader->biWidth)*(bmpHeader->biHeight));
 		//GravaBit(output, (bmpHeader->biWidth)*(bmpHeader->biHeight));
 
 	//free content
-	//bitmapHeader
-		freeBitmapHeader(&bmpHeader);
+	
+	//delta
+		free(deltaB);
+		free(deltaG);
+		free(deltaR);
+		
+		free(deltaInputB);
+		free(deltaInputG);
+		free(deltaInputR);
 
+	//RLE
+		for(i = 0; i < vectorSize ; i++){
+			free(rleVectorsB[i]); 
+			free(rleVectorsG[i]); 
+			free(rleVectorsR[i]);
+		}
+
+		free(rleVectorsB); 
+		free(rleVectorsG); 
+		free(rleVectorsR);
+	
 	//zzScanVector
 	
 		for(i = 0; i < vectorSize ; i++){
@@ -257,10 +324,16 @@ int main(int argc, char *argv[]){
 		free(matrixG);
 		free(matrixB);
 
+		free(deltaB);
+		free(deltaG);
+		free(deltaR);
 
 		//free(output);
 		free(rleInputVector);
 		free(rleRepetitionVector);
+
+	//bitmapHeader
+		freeBitmapHeader(&bmpHeader);
 
 	//deallocate img
 		free(img);
