@@ -48,10 +48,10 @@ typedef struct
 int decimal_to_binary(int Num);
 void GravaBit(Table_t *TabCodigos, int tam);
 
-void DCT(unsigned char **m);
-void IDCT(unsigned char **m);
+void DCT(char **m);
+void IDCT(char **m);
 
-unsigned char *zigzagProcedure(unsigned char **tgt);
+char *zigzagProcedure(char **tgt);
 
 
 //util quicksorting colors

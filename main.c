@@ -57,9 +57,9 @@ int main(int argc, char *argv[]){
 		loadBMP(bmpHeader, src, img);
 
 		int vectorSize = ((bmpHeader->biWidth/8)*(bmpHeader->biHeight/8));
-		unsigned char ***matrixR = (unsigned char ***)malloc(vectorSize*sizeof(unsigned char **));
-		unsigned char ***matrixG = (unsigned char ***)malloc(vectorSize*sizeof(unsigned char **));
-		unsigned char ***matrixB = (unsigned char ***)malloc(vectorSize*sizeof(unsigned char **));
+		char ***matrixR = (char ***)malloc(vectorSize*sizeof(char **));
+		char ***matrixG = (char ***)malloc(vectorSize*sizeof(char **));
+		char ***matrixB = (char ***)malloc(vectorSize*sizeof(char **));
 
 		//slashing our image into a vector of 8x8 matrix
 		bmpSlashSquares(img, bmpHeader->biWidth, bmpHeader->biHeight, 
@@ -67,14 +67,14 @@ int main(int argc, char *argv[]){
 		int i, j;
 
 		for(i=0 ; i < vectorSize; i++){
-				matrixR[i]=(unsigned char **)malloc((8)*sizeof(unsigned char *));
-				matrixG[i]=(unsigned char **)malloc((8)*sizeof(unsigned char *));
-				matrixB[i]=(unsigned char **)malloc((8)*sizeof(unsigned char *));
+				matrixR[i]=(char **)malloc((8)*sizeof(char *));
+				matrixG[i]=(char **)malloc((8)*sizeof(char *));
+				matrixB[i]=(char **)malloc((8)*sizeof(char *));
 
 				for (j=0; j < 8; j++){
-					matrixR[i][j] = (unsigned char *)malloc(8*sizeof(unsigned char));
-					matrixG[i][j] = (unsigned char *)malloc(8*sizeof(unsigned char));
-					matrixB[i][j] = (unsigned char *)malloc(8*sizeof(unsigned char));
+					matrixR[i][j] = (char *)malloc(8*sizeof(char));
+					matrixG[i][j] = (char *)malloc(8*sizeof(char));
+					matrixB[i][j] = (char *)malloc(8*sizeof(char));
 				}
 		}
 
@@ -105,11 +105,98 @@ int main(int argc, char *argv[]){
 		}
 
 
-		//quantization - zigzag scan!
-		//
-		unsigned char **zzScanR = (unsigned char **)malloc(vectorSize*sizeof(unsigned char *));
-		unsigned char **zzScanG = (unsigned char **)malloc(vectorSize*sizeof(unsigned char *));
-		unsigned char **zzScanB = (unsigned char **)malloc(vectorSize*sizeof(unsigned char *));
+		//quantization + zigzag scan!
+
+		char qzTable[8][8];
+
+// setting qzTable values
+
+		qzTable[0][0] = 16;
+		qzTable[0][1] = 11;
+		qzTable[0][2] = 10;
+		qzTable[0][3] = 16;
+		qzTable[0][4] = 24;
+		qzTable[0][5] = 40;
+		qzTable[0][6] = 51;
+		qzTable[0][7] = 61;
+
+		qzTable[1][0] = 12;
+		qzTable[1][1] = 12;
+		qzTable[1][2] = 14;
+		qzTable[1][3] = 19;
+		qzTable[1][4] = 26;
+		qzTable[1][5] = 58;
+		qzTable[1][6] = 60;
+		qzTable[1][7] = 55;
+
+		qzTable[2][0] = 14;
+		qzTable[2][1] = 13;
+		qzTable[2][2] = 16;
+		qzTable[2][3] = 24;
+		qzTable[2][4] = 40;
+		qzTable[2][5] = 57;
+		qzTable[2][6] = 69;
+		qzTable[2][7] = 56;
+
+		qzTable[3][0] = 14;
+		qzTable[3][1] = 17;
+		qzTable[3][2] = 22;
+		qzTable[3][3] = 29;
+		qzTable[3][4] = 51;
+		qzTable[3][5] = 87;
+		qzTable[3][6] = 80;
+		qzTable[3][7] = 62;
+
+		qzTable[4][0] = 18;
+		qzTable[4][1] = 22;
+		qzTable[4][2] = 37;
+		qzTable[4][3] = 56;
+		qzTable[4][4] = 68;
+		qzTable[4][5] = 109;
+		qzTable[4][6] = 103;
+		qzTable[4][7] = 77;
+
+		qzTable[5][0] = 24;
+		qzTable[5][1] = 35;
+		qzTable[5][2] = 55;
+		qzTable[5][3] = 64;
+		qzTable[5][4] = 81;
+		qzTable[5][5] = 104;
+		qzTable[5][6] = 113;
+		qzTable[5][7] = 92;
+
+		qzTable[6][0] = 49;
+		qzTable[6][1] = 64;
+		qzTable[6][2] = 78;
+		qzTable[6][3] = 87;
+		qzTable[6][4] = 103;
+		qzTable[6][5] = 121;
+		qzTable[6][6] = 120;
+		qzTable[6][7] = 101;
+
+		qzTable[7][0] = 72;
+		qzTable[7][1] = 92;
+		qzTable[7][2] = 95;
+		qzTable[7][3] = 98;
+		qzTable[7][4] = 112;
+		qzTable[7][5] = 100;
+		qzTable[7][6] = 103;
+		qzTable[7][7] = 99;
+
+
+		for(int k=0; k < vectorSize; k++){
+			for(i=0; i<8; i++){
+				for(j=0; j<8; j++){
+					matrixR[k][i][j] = matrixR[k][i][j] / qzTable[i][j];
+					matrixG[k][i][j] = matrixG[k][i][j] / qzTable[i][j];
+					matrixB[k][i][j] = matrixB[k][i][j] / qzTable[i][j];
+				}
+			}
+		}
+
+		char **zzScanR = (char **)malloc(vectorSize*sizeof(char *));
+		char **zzScanG = (char **)malloc(vectorSize*sizeof(char *));
+		char **zzScanB = (char **)malloc(vectorSize*sizeof(char *));
 
 
 		for(i = 0; i < vectorSize ; i++){

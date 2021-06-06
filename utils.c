@@ -66,7 +66,7 @@ void GravaBit(Table_t *TabCodigos, int tam){ //Funcao para gravar os binários d
  *
 */
 
-void DCT(unsigned char **m){
+void DCT(char **m){
 
 	int i, j, x, y;
 	double **res = (double **)malloc(8*sizeof(double *));
@@ -95,14 +95,14 @@ void DCT(unsigned char **m){
 
 	for(i=0; i<8; i++){
 		for(j = 0 ; j<8; j++)
-			m[i][j] = floor((unsigned char)(res[i][j]));
+			m[i][j] = floor((char)(res[i][j]));
 	}
 
 	//don't forget to free this RES!
 
 }
 
-void IDCT(unsigned char **m){
+void IDCT(char **m){
 
 	int i, j, x, y;
 	double **res = (double **)malloc(8*sizeof(double *));
@@ -129,7 +129,7 @@ void IDCT(unsigned char **m){
 
 	for(i=0; i<8; i++){
 		for(j = 0 ; j<8; j++)
-			m[i][j] = floor((unsigned char)(res[i][j]));
+			m[i][j] = floor((char)(res[i][j]));
 	}
 
 	//don't forget to free this res matrix!
@@ -146,7 +146,7 @@ void IDCT(unsigned char **m){
 */
 
 
-unsigned char *zigzagProcedure(unsigned char **tgt){
+char *zigzagProcedure(char **tgt){
 
 	int i, j, k=0;
 
