@@ -35,8 +35,8 @@ unsigned int   biClrImportant;  /* Number of important colors */
 
 }BitmapHeader;
 
-//image stuff
-void WImg(BitmapHeader *bmpHeader, PIXEL_T *src);
+
+//void WImg(BitmapHeader *bmpHeader, PIXEL_T *src);
 
 typedef struct 
 {
@@ -46,7 +46,7 @@ typedef struct
 }Table_t;
 
 int decimal_to_binary(int Num);
-void GravaBit(FILE *outfile, Table_t *TabCodigos, int tam);
+void BitWrite(FILE *tgt, Table_t *input, int inputSize);
 
 void DCT(char **m);
 void IDCT(char **m);

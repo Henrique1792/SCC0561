@@ -16,16 +16,26 @@ int decimal_to_binary(int Num){ //função de transformacao de um decimal (negat
 }
 
 
-void GravaBit(FILE *output,Table_t *TabCodigos, int tam){ 
-    char* str = (char*)malloc(10*sizeof(char)); 
+/*
+ *
+ * Bit packing section
+ *
+ *
+*/
 
-    for (int i = 0; i < tam; ++i) {
-        sprintf(str, "%d", TabCodigos[i].unicode);
-        fwrite(str , 1 , sizeof(str) , output);
-    }
-	free(str);
+
+
+void BitWrite(FILE *tgt, Table_t *input, int inputSize){
+
+	char buffer[10];
+	int i = 0;
+
+	for(i=0; i<inputSize; i++){
+        sprintf(buffer, "%d", input[i].unicode);
+        fwrite(buffer , 1 , sizeof(buffer) , tgt);
+	}
+
 }
-
 
 /*
  *

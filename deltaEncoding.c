@@ -8,7 +8,7 @@ Table_t *deltaEncoding(char *vector, int vectorSize){
 
 	int i = 0, tam;
 	unsigned int old_binary[vectorSize];
-	char buffer[10];
+	char buffer[10] = {0};
 	int returnVector[vectorSize];
 
 	//load content as int

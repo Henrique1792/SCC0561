@@ -13,6 +13,7 @@ char qzTable[8][8];
 
 int main(int argc, char *argv[]){
 
+	//initializing quantization table;
 	qzTable[0][0] = 16;
 	qzTable[0][1] = 11;
 	qzTable[0][2] = 10;
@@ -118,11 +119,11 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
-	if(!strcmp(argv[2], "compression")){
+	if(!strcmp(argv[1], "compression")){
 	//BitmapHeader
 		BitmapHeader *bmpHeader = createBitmapHeader();
 		printf("FILE FOUND: %s\n", argv[1]);
-		src=fopen(argv[1], "rb");
+		src=fopen(argv[2], "rb");
 
 	//Read BitmapHeader
 		fillBitmapHeader(src, bmpHeader);
@@ -199,8 +200,6 @@ int main(int argc, char *argv[]){
 
 
 		//quantization + zigzag scan!
-
-
 		for(int k=0; k < fullSquares; k++){
 			for(i=0; i<8; i++){
 				for(j=0; j<8; j++){
@@ -211,9 +210,9 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		zzScanR = (char **)malloc(vectorSize*sizeof(char *));
-		zzScanG = (char **)malloc(vectorSize*sizeof(char *));
-		zzScanB = (char **)malloc(vectorSize*sizeof(char *));
+		zzScanR = (char **)calloc(vectorSize, sizeof(char *));
+		zzScanG = (char **)calloc(vectorSize, sizeof(char *));
+		zzScanB = (char **)calloc(vectorSize, sizeof(char *));
 
 
 		for(i = 0; i < fullSquares ; i++){
@@ -228,9 +227,9 @@ int main(int argc, char *argv[]){
 		//[0] positions: differ encoding
 		//[remaining] - RLE
 
-		rleVectorsR = (char **)malloc(fullSquares*sizeof(char *));
-		rleVectorsG = (char **)malloc(fullSquares*sizeof(char *));
-		rleVectorsB = (char **)malloc(fullSquares*sizeof(char *));
+		rleVectorsR = (char **)calloc(fullSquares, sizeof(char *));
+		rleVectorsG = (char **)calloc(fullSquares, sizeof(char *));
+		rleVectorsB = (char **)calloc(fullSquares, sizeof(char *));
 
 		for(i = 0; i < fullSquares ; i++){
 			rleVectorsR[i] = RLE_encoding(zzScanR[i], 64);
@@ -238,9 +237,9 @@ int main(int argc, char *argv[]){
 			rleVectorsB[i] = RLE_encoding(zzScanB[i], 64);
 		}
 
-		deltaInputR = (char *)malloc(fullSquares*sizeof(char));
-		deltaInputG = (char *)malloc(fullSquares*sizeof(char));
-		deltaInputB = (char *)malloc(fullSquares*sizeof(char));
+		deltaInputR = (char *)calloc(fullSquares, sizeof(char));
+		deltaInputG = (char *)calloc(fullSquares, sizeof(char));
+		deltaInputB = (char *)calloc(fullSquares, sizeof(char));
 
 		for(i=0 ; i<fullSquares;i++){
 			deltaInputR[i] = zzScanR[i][0];
@@ -249,9 +248,9 @@ int main(int argc, char *argv[]){
 		}
 
 
-		deltaR = deltaEncoding(deltaInputR, vectorSize);
-		deltaG = deltaEncoding(deltaInputG, vectorSize);
-		deltaB = deltaEncoding(deltaInputB, vectorSize);
+		deltaR = deltaEncoding(deltaInputR, fullSquares);
+		deltaG = deltaEncoding(deltaInputG, fullSquares);
+		deltaB = deltaEncoding(deltaInputB, fullSquares);
 
 		
 
@@ -269,47 +268,37 @@ int main(int argc, char *argv[]){
 		FILE *outfile = fopen("out.bin", "wb");
 		writeBitmapHeader(bmpHeader, outfile);	
 
-		GravaBit(outfile, deltaB, fullSquares);
-		printf("deltaB wrote\n");
-		GravaBit(outfile, deltaG, fullSquares);
-		printf("deltaG wrote\n");
-		GravaBit(outfile, deltaR, fullSquares);
-		printf("deltaR wrote\n");
+		BitWrite(outfile, deltaB, fullSquares);
+		BitWrite(outfile, deltaG, fullSquares);
+		BitWrite(outfile, deltaR, fullSquares);
 
 		
-		for(i=0; i<vectorSize; i++){
-			fwrite(rleVectorsB[i], sizeof(rleVectorsB), 1, outfile);
+		for(i=0; i<fullSquares; i++){
+			fwrite(rleVectorsB[i], sizeof(rleVectorsB[i]), 1, outfile);
 		}
 
-		for(i=0; i<vectorSize; i++){
-			fwrite(rleVectorsG[i], sizeof(rleVectorsG), 1, outfile);
+		for(i=0; i<fullSquares; i++){
+			fwrite(rleVectorsG[i], sizeof(rleVectorsG[i]), 1, outfile);
 		}
 
-		for(i=0; i<vectorSize; i++){
-			fwrite(rleVectorsR[i], sizeof(rleVectorsR), 1, outfile);
+		for(i=0; i<fullSquares; i++){
+			fwrite(rleVectorsR[i], sizeof(rleVectorsR[i]), 1, outfile);
 		}
 
-
-		//writeBitmapHeader(bmpHeader, bw);
-		//writeBMP(bmpHeader, img, bw);
-
-
-		//GravaBit(output, (bmpHeader->biWidth)*(bmpHeader->biHeight));
 
 	//free content
 	fclose(outfile);
-	
 	//delta
-		free(deltaB);
-		free(deltaG);
-		free(deltaR);
+	free(deltaB);
+	free(deltaG);
+	free(deltaR);
 		
-		free(deltaInputB);
-		free(deltaInputG);
-		free(deltaInputR);
+	free(deltaInputB);
+	free(deltaInputG);
+	free(deltaInputR);
 
 	//RLE
-		for(i = 0; i < vectorSize ; i++){
+		for(i = 0; i < fullSquares ; i++){
 			free(rleVectorsB[i]); 
 			free(rleVectorsG[i]); 
 			free(rleVectorsR[i]);
@@ -321,7 +310,7 @@ int main(int argc, char *argv[]){
 	
 	//zzScanVector
 	
-		for(i = 0; i < vectorSize ; i++){
+		for(i = 0; i < fullSquares ; i++){
 			free(zzScanR[i]);
 			free(zzScanG[i]);
 			free(zzScanB[i]);
@@ -332,8 +321,8 @@ int main(int argc, char *argv[]){
 
 		//DCT matrix
 
-		for(i = 0; i < vectorSize ; i++){
-			for(j = 0; j < vectorSize ; j++){
+		for(i = 0; i < 8 ; i++){
+			for(j = 0; j < 8 ; j++){
 				free(matrixR[i][j]);
 				free(matrixG[i][j]);
 				free(matrixB[i][j]);
@@ -356,7 +345,7 @@ int main(int argc, char *argv[]){
 		free(img);
 		fclose(src);
 	}else{
-		if(!strcmp(argv[2],"decompression")){
+		if(!strcmp(argv[1],"decompression")){
 			printf("Dummy content here\n");
 		}
 	}
