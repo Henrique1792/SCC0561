@@ -1,9 +1,6 @@
 #include "RLE.h"
 #include "deltaEncoding.h"
 
-#define RED "red.bmp"
-#define GREEN "green.bmp"
-#define BLUE "blue.bmp"
 
 char qzTable[8][8];
 
@@ -87,11 +84,13 @@ int main(int argc, char *argv[]){
 	qzTable[7][7] = 99;
 
 
+	BitmapHeader *bmpHeader;
 
 	//declarations used
-	int imgPosition;
-	int vectorSize;
-	int fullSquares;
+	PIXEL_T *img;
+	int imgPosition = 0;
+	int vectorSize = 0;
+	int fullSquares = 0;
 	char ***matrixR;
 	char ***matrixG;
 	char ***matrixB;
@@ -107,10 +106,10 @@ int main(int argc, char *argv[]){
 	Table_t *deltaR;
 	Table_t *deltaG;
 	Table_t *deltaB;
-
+	int i, j, k;
 
 	FILE *src;
-
+	FILE *outfile;
 //names section
 
 	if(argc < 3){
@@ -118,11 +117,11 @@ int main(int argc, char *argv[]){
 		printf("USAGE: <imgname||compressed_filename> <compression||decompression>\n");
 		exit(1);
 	}
+	printf("OPERATION: %s\tFILE FOUND: %s\n", argv[1],argv[2]);
 
 	if(!strcmp(argv[1], "compression")){
 	//BitmapHeader
-		BitmapHeader *bmpHeader = createBitmapHeader();
-		printf("FILE FOUND: %s\n", argv[1]);
+		bmpHeader = createBitmapHeader();
 		src=fopen(argv[2], "rb");
 
 	//Read BitmapHeader
@@ -144,7 +143,7 @@ int main(int argc, char *argv[]){
 		}
 
 //Allocate image
-		PIXEL_T *img = (PIXEL_T *)malloc(((bmpHeader->biWidth)*(bmpHeader->biHeight))*sizeof(PIXEL_T));
+		img = (PIXEL_T *)malloc(((bmpHeader->biWidth)*(bmpHeader->biHeight))*sizeof(PIXEL_T));
 
 //Reload img postion and loading bmp to img
 		BEGINBMP(src, bmpHeader->bfOffBits);
@@ -158,7 +157,6 @@ int main(int argc, char *argv[]){
 		//slashing our image into a vector of 8x8 matrix
 		bmpSlashSquares(img, bmpHeader->biWidth, bmpHeader->biHeight, 
 				((bmpHeader->biWidth)*(bmpHeader->biHeight)), &fullSquares);
-		int i, j;
 
 		for(i=0 ; i < vectorSize; i++){
 				matrixR[i]=(char **)malloc((8)*sizeof(char *));
@@ -200,7 +198,7 @@ int main(int argc, char *argv[]){
 
 
 		//quantization + zigzag scan!
-		for(int k=0; k < fullSquares; k++){
+		for(k=0; k < fullSquares; k++){
 			for(i=0; i<8; i++){
 				for(j=0; j<8; j++){
 					matrixR[k][i][j] = matrixR[k][i][j] / qzTable[i][j];
@@ -261,12 +259,14 @@ int main(int argc, char *argv[]){
 		//deltaB
 		//deltaG
 		//deltaR
+		//for i in bitmap
 		//rleVectorsB
 		//rleVectorsG
 		//rleVectorsR
 
-		FILE *outfile = fopen("out.bin", "wb");
+		outfile = fopen("out.bin", "wb");
 		writeBitmapHeader(bmpHeader, outfile);	
+		fwrite(&fullSquares, sizeof(int), 1, outfile);
 
 		BitWrite(outfile, deltaB, fullSquares);
 		BitWrite(outfile, deltaG, fullSquares);
@@ -275,18 +275,82 @@ int main(int argc, char *argv[]){
 		
 		for(i=0; i<fullSquares; i++){
 			fwrite(rleVectorsB[i], sizeof(rleVectorsB[i]), 1, outfile);
-		}
-
-		for(i=0; i<fullSquares; i++){
 			fwrite(rleVectorsG[i], sizeof(rleVectorsG[i]), 1, outfile);
-		}
-
-		for(i=0; i<fullSquares; i++){
 			fwrite(rleVectorsR[i], sizeof(rleVectorsR[i]), 1, outfile);
 		}
 
+	}else{
+		if(!strcmp(argv[1],"decompression")){
+			bmpHeader = createBitmapHeader();
+			src=fopen(argv[2], "rb");
+
+			if(bmpHeader->biHeight % 8 != 0 ||
+			   bmpHeader->biWidth % 8 != 0 ||
+			   (bmpHeader->biHeight < 8 || bmpHeader->biHeight > 1280) ||
+			   (bmpHeader->biWidth < 8 || bmpHeader->biWidth > 800) ){
+				printf("Seems odd, but the compressed file isn't valid\n standards accepted:\nMax_size: 1280x800\tMin_Size: 8x8\n \
+						width %% 8 = 0\t height %% 8 = 0\n \
+						24bits/color");
+
+				//close and deallocate stuff if falls here, please
+				freeBitmapHeader(&bmpHeader);
+				fclose(src);
+				exit(1);
+			}
+
+			//recovering header content
+			fillBitmapHeader(src, bmpHeader);
+			printBitmapHeader(bmpHeader);
+			
+			//We'll use fullSquares for partition
+			fread(&fullSquares, sizeof(int), 1, src);
+
+			//recovering delta vectors
+			deltaB = (Table_t*)malloc(fullSquares*sizeof(Table_t));
+			deltaG = (Table_t*)malloc(fullSquares*sizeof(Table_t));
+			deltaR = (Table_t*)malloc(fullSquares*sizeof(Table_t));
+
+			BitRead(src, deltaB, fullSquares);
+			BitRead(src, deltaG, fullSquares);
+			BitRead(src, deltaR, fullSquares);
+
+
+			//recovering RLE vectors
+			rleVectorsB = (char **)malloc(fullSquares*sizeof(char *));
+			rleVectorsG = (char **)malloc(fullSquares*sizeof(char *));
+			rleVectorsR = (char **)malloc(fullSquares*sizeof(char *));
+
+			for(i=0; i<fullSquares; i++){
+				rleVectorsB[i] = (char *)malloc((2*vectorSize)*sizeof(char));
+				rleVectorsG[i] = (char *)malloc((2*vectorSize)*sizeof(char));
+				rleVectorsR[i] = (char *)malloc((2*vectorSize)*sizeof(char));
+			}
+			
+
+			for(i=0; i<fullSquares; i++){
+				fread(&rleVectorsB[i], sizeof(rleVectorsB[i]), 1, src);
+				fread(&rleVectorsG[i], sizeof(rleVectorsG[i]), 1, src);
+				fread(&rleVectorsR[i], sizeof(rleVectorsR[i]), 1, src);
+			}
+
+
+
+			for(i = 0; i<vectorSize; i++){
+				zzScanB[i] = RLE_decoding(rleVectorsB[i], 64);
+				zzScanG[i] = RLE_decoding(rleVectorsG[i], 64);
+				zzScanR[i] = RLE_decoding(rleVectorsR[i], 64);
+
+			}
+
+			//recovering zigzag vectors
+			zzScanR = (char **)calloc(vectorSize, sizeof(char *));
+			zzScanG = (char **)calloc(vectorSize, sizeof(char *));
+			zzScanB = (char **)calloc(vectorSize, sizeof(char *));
+		}
+	}
 
 	//free content
+	
 	fclose(outfile);
 	//delta
 	free(deltaB);
@@ -344,11 +408,6 @@ int main(int argc, char *argv[]){
 	//deallocate img
 		free(img);
 		fclose(src);
-	}else{
-		if(!strcmp(argv[1],"decompression")){
-			printf("Dummy content here\n");
-		}
 	}
-
 	return EXIT_SUCCESS;
 }

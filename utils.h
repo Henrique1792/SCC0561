@@ -47,6 +47,7 @@ typedef struct
 
 int decimal_to_binary(int Num);
 void BitWrite(FILE *tgt, Table_t *input, int inputSize);
+void BitRead(FILE *tgt, Table_t *input, int inputSize);
 
 void DCT(char **m);
 void IDCT(char **m);

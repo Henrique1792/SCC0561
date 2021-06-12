@@ -18,3 +18,5 @@ char *RLE_encoding(char *vector, int vectorSize){
 	}
 	return rt;
 }
+
+void RLE_decoding(){}

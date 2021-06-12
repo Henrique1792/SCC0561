@@ -37,6 +37,18 @@ void BitWrite(FILE *tgt, Table_t *input, int inputSize){
 
 }
 
+void BitRead(FILE *tgt, Table_t *input, int inputSize){
+
+	char buffer[10];
+	int i = 0;
+
+	for(i=0; i<inputSize; i++){
+        fread(buffer , 1 , sizeof(buffer) , tgt);
+        sscanf(buffer, "%d", &input[i].unicode);
+	}
+
+}
+
 /*
  *
  * DCT section
