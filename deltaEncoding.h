@@ -4,6 +4,6 @@
 
 
 Table_t *deltaEncoding(char *vector, int vectorSize);
-void deltaDecoding(signed char *buf, int vec);
+Table_t *deltaDecoding(char *src, int vectorSize);
 
 #endif

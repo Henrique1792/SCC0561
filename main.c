@@ -145,7 +145,7 @@ int main(int argc, char *argv[]){
 //Allocate image
 		img = (PIXEL_T *)malloc(((bmpHeader->biWidth)*(bmpHeader->biHeight))*sizeof(PIXEL_T));
 
-//Reload img postion and loading bmp to img
+//Reload img postion and loading bmp to img structure
 		BEGINBMP(src, bmpHeader->bfOffBits);
 		loadBMP(bmpHeader, src, img);
 
@@ -159,9 +159,9 @@ int main(int argc, char *argv[]){
 				((bmpHeader->biWidth)*(bmpHeader->biHeight)), &fullSquares);
 
 		for(i=0 ; i < vectorSize; i++){
-				matrixR[i]=(char **)malloc((8)*sizeof(char *));
-				matrixG[i]=(char **)malloc((8)*sizeof(char *));
-				matrixB[i]=(char **)malloc((8)*sizeof(char *));
+				matrixR[i]=(char **)malloc(8*sizeof(char *));
+				matrixG[i]=(char **)malloc(8*sizeof(char *));
+				matrixB[i]=(char **)malloc(8*sizeof(char *));
 
 				for (j=0; j < 8; j++){
 					matrixR[i][j] = (char *)malloc(8*sizeof(char));
@@ -222,19 +222,10 @@ int main(int argc, char *argv[]){
 		//RLE+huffman
 		
 		//Remember: 
-		//[0] positions: differ encoding
+		//[0] positions: delta encoding
 		//[remaining] - RLE
 
-		rleVectorsR = (char **)calloc(fullSquares, sizeof(char *));
-		rleVectorsG = (char **)calloc(fullSquares, sizeof(char *));
-		rleVectorsB = (char **)calloc(fullSquares, sizeof(char *));
-
-		for(i = 0; i < fullSquares ; i++){
-			rleVectorsR[i] = RLE_encoding(zzScanR[i], 64);
-			rleVectorsG[i] = RLE_encoding(zzScanG[i], 64);
-			rleVectorsB[i] = RLE_encoding(zzScanB[i], 64);
-		}
-
+		//delta
 		deltaInputR = (char *)calloc(fullSquares, sizeof(char));
 		deltaInputG = (char *)calloc(fullSquares, sizeof(char));
 		deltaInputB = (char *)calloc(fullSquares, sizeof(char));
@@ -250,12 +241,26 @@ int main(int argc, char *argv[]){
 		deltaG = deltaEncoding(deltaInputG, fullSquares);
 		deltaB = deltaEncoding(deltaInputB, fullSquares);
 
+		//rle
+		rleVectorsR = (char **)calloc(fullSquares, sizeof(char *));
+		rleVectorsG = (char **)calloc(fullSquares, sizeof(char *));
+		rleVectorsB = (char **)calloc(fullSquares, sizeof(char *));
+
+		for(i = 0; i < fullSquares ; i++){
+			rleVectorsR[i] = RLE_encoding(zzScanR[i], 64);
+			rleVectorsG[i] = RLE_encoding(zzScanG[i], 64);
+			rleVectorsB[i] = RLE_encoding(zzScanB[i], 64);
+		}
+
+
 		
 
-		//Write file
+		//Write file sequence
 
 		//standard stablishment:
+		//
 		//original BMPheader
+		//fullSquares obtained
 		//deltaB
 		//deltaG
 		//deltaR
@@ -301,19 +306,55 @@ int main(int argc, char *argv[]){
 			//recovering header content
 			fillBitmapHeader(src, bmpHeader);
 			printBitmapHeader(bmpHeader);
+			vectorSize = ((bmpHeader->biWidth/8)*(bmpHeader->biHeight/8));
 			
 			//We'll use fullSquares for partition
 			fread(&fullSquares, sizeof(int), 1, src);
 
 			//recovering delta vectors
-			deltaB = (Table_t*)malloc(fullSquares*sizeof(Table_t));
-			deltaG = (Table_t*)malloc(fullSquares*sizeof(Table_t));
-			deltaR = (Table_t*)malloc(fullSquares*sizeof(Table_t));
+			deltaInputR = (char *)calloc(fullSquares, sizeof(char));
+			deltaInputG = (char *)calloc(fullSquares, sizeof(char));
+			deltaInputB = (char *)calloc(fullSquares, sizeof(char));
 
-			BitRead(src, deltaB, fullSquares);
-			BitRead(src, deltaG, fullSquares);
-			BitRead(src, deltaR, fullSquares);
+			deltaB = BitRead(src, deltaInputB, fullSquares);
+			deltaG = BitRead(src, deltaInputG, fullSquares);
+			deltaR = BitRead(src, deltaInputR, fullSquares);
 
+			//rle
+			rleVectorsR = (char **)calloc(fullSquares, sizeof(char *));
+			rleVectorsG = (char **)calloc(fullSquares, sizeof(char *));
+			rleVectorsB = (char **)calloc(fullSquares, sizeof(char *));
+
+			for(i = 0; i < fullSquares; i++){
+				rleVectorsB[i] = (char *)calloc(fullSquares, sizeof(char));
+				rleVectorsG[i] = (char *)calloc(fullSquares, sizeof(char));
+				rleVectorsR[i] = (char *)calloc(fullSquares, sizeof(char));
+
+				fread(&rleVectorsB[i],sizeof(rleVectorsB[i]),1,src);
+				fread(&rleVectorsG[i],sizeof(rleVectorsG[i]),1,src);
+				fread(&rleVectorsR[i],sizeof(rleVectorsR[i]),1,src);
+			}
+
+			//well rebuild matrix
+			//delta[val], RLE
+				
+			zzScanR = (char **)calloc(vectorSize, sizeof(char *));
+			zzScanG = (char **)calloc(vectorSize, sizeof(char *));
+			zzScanB = (char **)calloc(vectorSize, sizeof(char *));
+
+
+			for(i = 0; i < fullSquares ; i++){
+				*zzScanB[i] = (char)deltaB[i].unicode;
+				*zzScanG[i] = (char)deltaG[i].unicode;
+				*zzScanR[i] = (char)deltaR[i].unicode;
+
+
+				for(j=1;j<fullSquares;j++){
+					zzScanB[j] = rleVectorsB[i];
+					zzScanG[j] = rleVectorsB[i];
+					zzScanR[j] = rleVectorsB[i];
+				}
+			}
 
 			//recovering RLE vectors
 			rleVectorsB = (char **)malloc(fullSquares*sizeof(char *));
@@ -334,13 +375,6 @@ int main(int argc, char *argv[]){
 			}
 
 
-
-			for(i = 0; i<vectorSize; i++){
-				zzScanB[i] = RLE_decoding(rleVectorsB[i], 64);
-				zzScanG[i] = RLE_decoding(rleVectorsG[i], 64);
-				zzScanR[i] = RLE_decoding(rleVectorsR[i], 64);
-
-			}
 
 			//recovering zigzag vectors
 			zzScanR = (char **)calloc(vectorSize, sizeof(char *));
@@ -408,6 +442,5 @@ int main(int argc, char *argv[]){
 	//deallocate img
 		free(img);
 		fclose(src);
-	}
-	return EXIT_SUCCESS;
+		return EXIT_SUCCESS;
 }

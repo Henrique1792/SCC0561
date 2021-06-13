@@ -44,15 +44,3 @@ Table_t *deltaEncoding(char *vector, int vectorSize){
 
 	return rt;
 }
-
-
-
-void deltaDecoding(signed char *buf, int vectorSize){
-    signed char last = 0;
-	int i;
-    for (i = 0; i < vectorSize; i++) {
-        signed char delta = buf[i];
-        buf[i] = delta + last;
-        last = buf[i];
-    }
-}

@@ -1,7 +1,7 @@
 #include "utils.h"
 
 
-int decimal_to_binary(int Num){ //função de transformacao de um decimal (negativo ou nao) para binário sem sinal
+unsigned int decimal_to_binary(int Num){ //função de transformacao de um decimal (negativo ou nao) para binário sem sinal
 
     int binary_num = 0;
     int counter = 0;
@@ -15,6 +15,13 @@ int decimal_to_binary(int Num){ //função de transformacao de um decimal (negat
     return abs(binary_num); //retornando binario sem sinal
 }
 
+
+int binary2int(char *src){
+	int rt=0;	
+
+	sscanf(src, "%d", &rt);
+	return rt;
+}
 
 /*
  *
@@ -31,22 +38,43 @@ void BitWrite(FILE *tgt, Table_t *input, int inputSize){
 	int i = 0;
 
 	for(i=0; i<inputSize; i++){
+		//writing unicode
         sprintf(buffer, "%d", input[i].unicode);
+        fwrite(buffer , 1 , sizeof(buffer) , tgt);
+		//writing size
+        sprintf(buffer, "%c", input[i].unicodeSize);
         fwrite(buffer , 1 , sizeof(buffer) , tgt);
 	}
 
 }
 
-void BitRead(FILE *tgt, Table_t *input, int inputSize){
+Table_t *BitRead(FILE *tgt, char *input, int inputSize){
 
 	char buffer[10];
+	input = (char *)malloc(10*sizeof(char));
+	unsigned int tmpUnicode;
+	unsigned char tmpUnicodeSize;
 	int i = 0;
 
+	Table_t *rt = (Table_t *)malloc(inputSize*sizeof(Table_t));
+
 	for(i=0; i<inputSize; i++){
+
         fread(buffer , 1 , sizeof(buffer) , tgt);
-        sscanf(buffer, "%d", &input[i].unicode);
+        sscanf(buffer, "%s", input);
+		tmpUnicode = binary2int(buffer);
+		rt[i].unicode = tmpUnicode;
+
+		//reading unicodeSize
+        fread(buffer , 1 , sizeof(buffer) , tgt);
+        sscanf(buffer, "%s", input);
+		tmpUnicodeSize = binary2int(buffer);
+		rt[i].unicodeSize = tmpUnicodeSize;
 	}
 
+	free(input);
+
+	return rt;
 }
 
 /*
@@ -89,6 +117,10 @@ void DCT(char **m){
 	}
 
 	//don't forget to free this RES!
+	for(int i =0; i<8;i++)
+		free(res[i]);
+	free(res);
+	
 
 }
 
@@ -122,8 +154,10 @@ void IDCT(char **m){
 			m[i][j] = floor((char)(res[i][j]));
 	}
 
-	//don't forget to free this res matrix!
-
+	//don't forget to free this RES!
+	for(int i =0; i<8;i++)
+		free(res[i]);
+	free(res);
 }
 
 
