@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
 
 	if(argc < 3){
 		printf("insuficient nargs\n");
-		printf("USAGE: <imgname||compressed_filename> <compression||decompression>\n");
+		printf("USAGE: <compression||decompression> <imgname||compressed_filename>\n");
 		exit(1);
 	}
 	printf("OPERATION: %s\tFILE FOUND: %s\n", argv[1],argv[2]);
