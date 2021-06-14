@@ -1,28 +1,27 @@
 #include "bitmap.h"
 
-BitmapHeader *createBitmapHeader(){
-	BitmapHeader *rt = (BitmapHeader *)malloc(sizeof(BitmapHeader));
+BitmapHeader *createBitmapHeader() {
+	BitmapHeader *rt = (BitmapHeader *) malloc(sizeof(BitmapHeader));
 	return (rt == NULL ?  NULL : rt);
 }
 
-void freeBitmapHeader(BitmapHeader **tgt){
-	if(tgt == NULL || *tgt==NULL) return;
+void freeBitmapHeader(BitmapHeader **tgt) {
+	if (tgt == NULL || *tgt == NULL) return;
 	free(*tgt);
 }
 
-
-void fillBitmapHeader(FILE *src, BitmapHeader *tgt){
-	//use file already opened bro
-	if(src== NULL || tgt == NULL) return;
+void fillBitmapHeader(FILE *src, BitmapHeader *tgt) {
+	// use file already opened bro
+	if(src == NULL || tgt == NULL) return;
 
 	rewind(src);
+
 	// reading BMPFILEHEADER
 	fread(&tgt->bfType, sizeof(tgt->bfType), 1, src);
 	fread(&tgt->bfSize, sizeof(tgt->bfSize), 1, src);
 	fread(&tgt->bfReserved1, sizeof(tgt->bfReserved1), 1, src);
 	fread(&tgt->bfReserved2, sizeof(tgt->bfReserved2), 1, src);
 	fread(&tgt->bfOffBits, sizeof(tgt->bfOffBits), 1, src);
-
 
 	// reading BMPINFOHEADER
 	fread(&tgt->biSize, sizeof(tgt->biSize), 1, src);
@@ -38,18 +37,18 @@ void fillBitmapHeader(FILE *src, BitmapHeader *tgt){
 	fread(&tgt->biClrImportant, sizeof(tgt->biClrImportant), 1, src);
 }
 
-void printBitmapHeader(BitmapHeader *tgt){
+void printBitmapHeader(BitmapHeader *tgt) {
 
 	printf("*************** File Header ***************\n\n");
 
-	printf("Magic number for file: %x\n", tgt->bfType);   
-	printf("File's size: %d\n",tgt->bfSize);           
+	printf("Magic number for file: %x\n", tgt->bfType);
+	printf("File's size: %d\n",tgt->bfSize);
 	printf("Offset to bitmap data: %d\n", tgt->bfOffBits);
 
 	printf("\n\n");
 	printf("*************** Info Header ***************\n\n");
 	printf("Info header's size: %d\n", tgt->biSize);
-	printf("Width: %d\n", tgt->biWidth);          
+	printf("Width: %d\n", tgt->biWidth);
 	printf("Height: %d\n",tgt->biHeight);
 	printf("Color planes: %d\n", tgt->biPlanes);
 	printf("Bits per pixel: %d\n", tgt->biBitCount);
@@ -58,22 +57,20 @@ void printBitmapHeader(BitmapHeader *tgt){
 	printf("X Pixels per meter: %d\n", tgt->biXPelsPerMeter);
 	printf("Y Pixels per meter: %d\n", tgt->biYPelsPerMeter);
 	printf("Number of colors: %d\n", tgt->biClrUsed);
-	printf("Numberof important colors: %d\n", tgt->biClrImportant); 
-
+	printf("Numberof important colors: %d\n", tgt->biClrImportant);
 }
 
-void writeBitmapHeader(BitmapHeader *tgt, FILE *src){
+void writeBitmapHeader(BitmapHeader *tgt, FILE *src) {
 	if(src == NULL || tgt == NULL) return;
-	
-// writing BMPFILEHEADER
+
+	// writing BMPFILEHEADER
 	fwrite(&tgt->bfType, sizeof(tgt->bfType), 1, src);
 	fwrite(&tgt->bfSize, sizeof(tgt->bfSize), 1, src);
 	fwrite(&tgt->bfReserved1, sizeof(tgt->bfReserved1), 1, src);
 	fwrite(&tgt->bfReserved2, sizeof(tgt->bfReserved2), 1, src);
 	fwrite(&tgt->bfOffBits, sizeof(tgt->bfOffBits), 1, src);
 
-
-// writing BMPINFOHEADER
+	// writing BMPINFOHEADER
 	fwrite(&tgt->biSize, sizeof(tgt->biSize), 1, src);
 	fwrite(&tgt->biWidth, sizeof(tgt->biWidth), 1, src);
 	fwrite(&tgt->biHeight, sizeof(tgt->biHeight), 1, src);
@@ -87,14 +84,13 @@ void writeBitmapHeader(BitmapHeader *tgt, FILE *src){
 	fwrite(&tgt->biClrImportant, sizeof(tgt->biClrImportant), 1, src);
 }
 
-void loadBMP(BitmapHeader *src, FILE *raw, PIXEL_T *img){
-	if(src == NULL || raw == NULL || img == NULL) return;
+void loadBMP(BitmapHeader *src, FILE *raw, PIXEL_T *img) {
+	if (src == NULL || raw == NULL || img == NULL) return;
 
 	int content = (src->biWidth * src->biHeight);
 	unsigned char tmp[3];
 
-
-	while(content>=0){
+	while (content >= 0) {
 		fread(tmp, 3, sizeof(unsigned char), raw);
 		img[content].B = tmp[0];
 		img[content].G = tmp[1];
@@ -102,9 +98,8 @@ void loadBMP(BitmapHeader *src, FILE *raw, PIXEL_T *img){
 	}
 }
 
-
 //we're writing img with src header on raw file
-void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw){
+void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw) {
 	if(src == NULL || raw == NULL || img == NULL) return;
 
 	int content = (src->biWidth * src->biHeight);
@@ -113,38 +108,35 @@ void writeBMP(BitmapHeader *src, PIXEL_T *img, FILE *raw){
 	rewind(raw);
 	BEGINBMP(raw, src->bfOffBits);
 
-	for(i = content ; i >= 0; i--){
-		tmp[0] = img[i].B; 
+	for (i = content ; i >= 0; i--) {
+		tmp[0] = img[i].B;
 		tmp[1] = img[i].G;
-		tmp[2] = img[i].R; 
+		tmp[2] = img[i].R;
 		fwrite(tmp, 3, sizeof(unsigned char), raw);
 	}
-
 }
 
-
 void bmpSlashSquares(PIXEL_T *tgt, int width, int height,
-					int imgSize, int *fullSquares){
-
+					int imgSize, int *fullSquares) {
 	int nSquareW, nSquareH, k;
 	int nSquare = 0;
 	nSquareW = nSquareH = 0;
 
 	//looping over img
-	for(k = 0; k < imgSize; k++){
-		if(k % 8 == 0){
+	for (k = 0; k < imgSize; k++) {
+		if (k % 8 == 0) {
 			nSquareW++;
 		}
 
-		if(k % width == 0){
+		if (k % width == 0) {
 			nSquareH++;
 		}
-		
 
-		if(nSquareW == 8)
+		if (nSquareW == 8) {
 			nSquareW = 0;
+		}
 
-		if(nSquareH  == 8){
+		if (nSquareH  == 8) {
 			nSquare++;
 			nSquareH = 0;
 		}
@@ -152,7 +144,6 @@ void bmpSlashSquares(PIXEL_T *tgt, int width, int height,
 		tgt[k].nSquareW = nSquareW;
 		tgt[k].nSquareH = nSquareH;
 	}
+
 	*fullSquares = nSquare;
-
 }
-
