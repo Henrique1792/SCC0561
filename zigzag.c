@@ -28,10 +28,10 @@ int main()
 
 		i++;
 		j--;
-	}while(i+j<=n);
+	}while(i+j<n-1);
 	do
 	{
-		printf("%d ",a[i][++j]);
+		printf("%d ",a[++i][j]);
 
 		for(i=i-1,j=j+1;j<n;j++,i--)
 			printf("%d ",a[i][j]);
@@ -47,6 +47,7 @@ int main()
 			printf("%d ",a[i][j]);
 		i--;
 		j++;
-	}while(i<n||j<n);
+	}while(i<n-1||j<n-1);
+	printf("%d ",a[n-1][n-1]);
 	return 0;
 }

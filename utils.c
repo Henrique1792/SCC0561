@@ -177,6 +177,7 @@ char *zigzagProcedure(char **tgt) {
 
 	char *ret = (char *) malloc(64 * sizeof(char));
 
+	ret[k++] = tgt[i][j];
 	do {
 		ret[k++] = tgt[i][++j];
 
@@ -199,12 +200,12 @@ char *zigzagProcedure(char **tgt) {
 
 		i++;
 		j--;
-	} while ((i + j) <= 8);
+	} while ((i + j) <= 7);
 
 	do {
 		ret[k++] = tgt[i][++j];
 
-		for(i=i-1,j=j+1; j<8; j++,i--)
+		for(i=i-1,j=j+1; j<7; j++,i--)
 			ret[k++] = tgt[i][j];
 		i++;
 		j--;
@@ -215,13 +216,14 @@ char *zigzagProcedure(char **tgt) {
 
 		ret[k++] = tgt[++i][j];
 
-		for (i = i + 1, j = j - 1; i < 8; i++, j--) {
+		for (i = i + 1, j = j - 1; i < 7; i++, j--) {
 			ret[k++] = tgt[i][j];
 		}
 
 		i--;
 		j++;
-	} while (i < 8 || j < 8);
+	} while (i < 7 || j < 7);
+	ret[63] = tgt[7][7];
 
 	return ret;
 }
