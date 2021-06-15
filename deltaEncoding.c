@@ -21,17 +21,17 @@ Table_t *deltaEncoding(char *vector, int vectorSize){
 	int *binary_vector = (int*)malloc(vectorSize*sizeof(int));
 
 	diff_vector[0] = returnVector[0];
-	binary_vector[0] = decimal_to_binary(diff_vector[0]);
+	binary_vector[0] = decimalToBinary(diff_vector[0]);
 	for (i = 0; i < (vectorSize-1); ++i) {
 		diff_vector[i+1] = (returnVector[i+1] - returnVector[i]);
-		binary_vector[i+1] = decimal_to_binary(diff_vector[i+1]);
+		binary_vector[i+1] = decimalToBinary(diff_vector[i+1]);
 	}
 
 	for (int i = 0; i < vectorSize; ++i) {
 		old_binary[i] = binary_vector[i]; 
 		sprintf(buffer, "%u", (char)old_binary[i]); 
 		tam = strlen(buffer);
-		rt[i].unicode = decimal_to_binary(tam); 
+		rt[i].unicode = decimalToBinary(tam); 
 		old_binary[i] = rt[i].unicode;
 		sprintf(buffer, "%u", (char)old_binary[i]);
 		tam = strlen(buffer); 
