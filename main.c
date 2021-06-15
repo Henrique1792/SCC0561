@@ -84,29 +84,44 @@ int main(int argc, char *argv[]){
 	qzTable[7][7] = 99;
 
 
+	//declarations
+	//
+	// img/file strucuture
 	BitmapHeader *bmpHeader;
-
-	//declarations used
-	PIXEL_T *img;
-	int imgPosition = 0;
+	PIXEL_T *img; int imgPosition = 0;
 	int vectorSize = 0;
 	int fullSquares = 0;
+
+	//Matrices for DCT/IDCT
 	char ***matrixR;
 	char ***matrixG;
 	char ***matrixB;
+	
+	// vectors for zzscan
 	char **zzScanR;
 	char **zzScanG;
 	char **zzScanB;
-	char **rleVectorsR;
-	char **rleVectorsG;
+
+
+	//rle vectors
 	char **rleVectorsB;
+	char **rleVectorsG;
+	char **rleVectorsR;
+
+	char *rleVectorDecompressB;
+	char *rleVectorDecompressG;
+	char *rleVectorDecompressR;
+
+	//delta required structures
 	char *deltaInputR; 
 	char *deltaInputG; 
 	char *deltaInputB; 
 	Table_t *deltaR;
 	Table_t *deltaG;
 	Table_t *deltaB;
-	int i, j, k;
+
+
+	int i, j, k, l;
 
 	FILE *src;
 	FILE *outfile;
@@ -201,9 +216,9 @@ int main(int argc, char *argv[]){
 		for(k=0; k < fullSquares; k++){
 			for(i=0; i<8; i++){
 				for(j=0; j<8; j++){
-					matrixR[k][i][j] = matrixR[k][i][j] / qzTable[i][j];
-					matrixG[k][i][j] = matrixG[k][i][j] / qzTable[i][j];
-					matrixB[k][i][j] = matrixB[k][i][j] / qzTable[i][j];
+					matrixB[k][i][j] /= qzTable[i][j];
+					matrixG[k][i][j] /= qzTable[i][j];
+					matrixR[k][i][j] /= qzTable[i][j];
 				}
 			}
 		}
@@ -226,9 +241,9 @@ int main(int argc, char *argv[]){
 		//[remaining] - RLE
 
 		//delta
-		deltaInputR = (char *)calloc(fullSquares, sizeof(char));
-		deltaInputG = (char *)calloc(fullSquares, sizeof(char));
 		deltaInputB = (char *)calloc(fullSquares, sizeof(char));
+		deltaInputG = (char *)calloc(fullSquares, sizeof(char));
+		deltaInputR = (char *)calloc(fullSquares, sizeof(char));
 
 		for(i=0 ; i<fullSquares;i++){
 			deltaInputR[i] = zzScanR[i][0];
@@ -237,23 +252,20 @@ int main(int argc, char *argv[]){
 		}
 
 
-		deltaR = deltaEncoding(deltaInputR, fullSquares);
-		deltaG = deltaEncoding(deltaInputG, fullSquares);
 		deltaB = deltaEncoding(deltaInputB, fullSquares);
+		deltaG = deltaEncoding(deltaInputG, fullSquares);
+		deltaR = deltaEncoding(deltaInputR, fullSquares);
 
 		//rle
-		rleVectorsR = (char **)calloc(fullSquares, sizeof(char *));
-		rleVectorsG = (char **)calloc(fullSquares, sizeof(char *));
 		rleVectorsB = (char **)calloc(fullSquares, sizeof(char *));
+		rleVectorsG = (char **)calloc(fullSquares, sizeof(char *));
+		rleVectorsR = (char **)calloc(fullSquares, sizeof(char *));
 
 		for(i = 0; i < fullSquares ; i++){
-			rleVectorsR[i] = RLE_encoding(zzScanR[i], 64);
-			rleVectorsG[i] = RLE_encoding(zzScanG[i], 64);
 			rleVectorsB[i] = RLE_encoding(zzScanB[i], 64);
+			rleVectorsG[i] = RLE_encoding(zzScanG[i], 64);
+			rleVectorsR[i] = RLE_encoding(zzScanR[i], 64);
 		}
-
-
-		
 
 		//Write file sequence
 
@@ -321,18 +333,30 @@ int main(int argc, char *argv[]){
 			deltaR = BitRead(src, deltaInputR, fullSquares);
 
 			//rle
-			rleVectorsR = (char **)calloc(fullSquares, sizeof(char *));
-			rleVectorsG = (char **)calloc(fullSquares, sizeof(char *));
-			rleVectorsB = (char **)calloc(fullSquares, sizeof(char *));
+			rleVectorsB = (char **)malloc(fullSquares*sizeof(char));
+			rleVectorsG = (char **)malloc(fullSquares*sizeof(char));
+			rleVectorsR = (char **)malloc(fullSquares*sizeof(char));
+
+			rleVectorDecompressB = (char *)malloc(2*sizeof(char));
+			rleVectorDecompressG = (char *)malloc(2*sizeof(char));
+			rleVectorDecompressR = (char *)malloc(2*sizeof(char));
+
+
+			int posB, posG, posR;
+			posB = posG = posR = 0;
 
 			for(i = 0; i < fullSquares; i++){
 				rleVectorsB[i] = (char *)calloc(fullSquares, sizeof(char));
 				rleVectorsG[i] = (char *)calloc(fullSquares, sizeof(char));
 				rleVectorsR[i] = (char *)calloc(fullSquares, sizeof(char));
 
-				fread(&rleVectorsB[i],sizeof(rleVectorsB[i]),1,src);
-				fread(&rleVectorsG[i],sizeof(rleVectorsG[i]),1,src);
-				fread(&rleVectorsR[i],sizeof(rleVectorsR[i]),1,src);
+				fread(&rleVectorDecompressB,sizeof(rleVectorDecompressB),1,src);
+				fread(&rleVectorDecompressG,sizeof(rleVectorDecompressG),1,src);
+				fread(&rleVectorDecompressR,sizeof(rleVectorDecompressR),1,src);
+
+				RLE_decoding(rleVectorsB[i], rleVectorDecompressB, &posB);
+				RLE_decoding(rleVectorsG[i], rleVectorDecompressG, &posG);
+				RLE_decoding(rleVectorsR[i], rleVectorDecompressR, &posR);
 			}
 
 			//well rebuild matrix
@@ -362,9 +386,9 @@ int main(int argc, char *argv[]){
 			rleVectorsR = (char **)malloc(fullSquares*sizeof(char *));
 
 			for(i=0; i<fullSquares; i++){
-				rleVectorsB[i] = (char *)malloc((2*vectorSize)*sizeof(char));
-				rleVectorsG[i] = (char *)malloc((2*vectorSize)*sizeof(char));
-				rleVectorsR[i] = (char *)malloc((2*vectorSize)*sizeof(char));
+				rleVectorsB[i] = (char *)malloc((2*fullSquares)*sizeof(char));
+				rleVectorsG[i] = (char *)malloc((2*fullSquares)*sizeof(char));
+				rleVectorsR[i] = (char *)malloc((2*fullSquares)*sizeof(char));
 			}
 			
 
@@ -374,12 +398,87 @@ int main(int argc, char *argv[]){
 				fread(&rleVectorsR[i], sizeof(rleVectorsR[i]), 1, src);
 			}
 
-
-
 			//recovering zigzag vectors
-			zzScanR = (char **)calloc(vectorSize, sizeof(char *));
-			zzScanG = (char **)calloc(vectorSize, sizeof(char *));
 			zzScanB = (char **)calloc(vectorSize, sizeof(char *));
+			zzScanG = (char **)calloc(vectorSize, sizeof(char *));
+			zzScanR = (char **)calloc(vectorSize, sizeof(char *));
+
+
+			for(i = 0; i < fullSquares; i++){
+				zzScanB[i] = (char *)malloc(vectorSize*sizeof(char));
+				zzScanG[i] = (char *)malloc(vectorSize*sizeof(char));
+				zzScanR[i] = (char *)malloc(vectorSize*sizeof(char));
+				
+				zzScanB[i][0] = binary2int(deltaB[i].unicode);
+				zzScanG[i][0] = binary2int(deltaG[i].unicode);
+				zzScanR[i][0] = binary2int(deltaR[i].unicode);
+				
+				for(j = 1; j < fullSquares; j++){
+					zzScanB[i][j] = rleVectorsB[i][j-1];
+					zzScanG[i][j] = rleVectorsG[i][j-1];
+					zzScanR[i][j] = rleVectorsR[i][j-1];
+				}
+			}
+
+		//recovering matrices
+
+			matrixR = (char ***)malloc(vectorSize*sizeof(char **));
+			matrixG = (char ***)malloc(vectorSize*sizeof(char **));
+			matrixB = (char ***)malloc(vectorSize*sizeof(char **));
+
+			for(i = 0; i < vectorSize; i++){
+
+				matrixB[i] = zigzagUndo(zzScanB[i]);
+				matrixG[i] = zigzagUndo(zzScanG[i]);
+				matrixR[i] = zigzagUndo(zzScanR[i]);
+
+			}
+
+			//quantization
+			for(k=0; k < fullSquares; k++){
+
+				for(i=0; i<8; i++){
+
+					for(j=0; j<8; j++){
+						
+						matrixB[k][i][j] *= qzTable[i][j];
+						matrixG[k][i][j] *= qzTable[i][j];
+						matrixR[k][i][j] *= qzTable[i][j];
+					}
+				}
+			}
+
+			//IDCT
+			for(k=0; k<fullSquares; k++){
+				IDCT(matrixB[i]);
+				IDCT(matrixG[i]);
+				IDCT(matrixR[i]);
+			}
+
+			//allocating img
+			img = (PIXEL_T *)malloc(((bmpHeader->biWidth)*(bmpHeader->biHeight))*sizeof(PIXEL_T));
+
+			for(i=0; i<((bmpHeader->biWidth)*(bmpHeader->biHeight)); i++){
+
+				//iteract through matrices
+				for(j=0; j<fullSquares; j++){
+
+					for(k=0; k<8; k++){
+
+						for(l=0; l<8; l++){
+							img[i].B = matrixB[j][k][l];
+							img[i].G = matrixG[j][k][l];
+							img[i].R = matrixR[j][k][l];
+						}
+
+					}
+
+				}
+
+			}
+
+		//write new fileimg
+
 		}
 	}
 

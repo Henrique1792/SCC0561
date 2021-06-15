@@ -19,4 +19,13 @@ char *RLE_encoding(char *vector, int vectorSize){
 	return rt;
 }
 
-void RLE_decoding(){}
+void RLE_decoding(char *tgt, char *src, int *position){
+	int repetitions,i;
+	
+	repetitions = binary2int(&src[1]);
+
+	for(i=0; i < repetitions; i++){
+		tgt[(*position)+i] = src[0];
+	}
+	*position+=repetitions;
+}
