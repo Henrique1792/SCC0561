@@ -3,7 +3,6 @@
 #include "bitmap.h"
 #include "utils.h"
 
-
 char *RLE_encoding(char *vector, int vectorSize);
 void RLE_decoding(char *tgt, char *src, int *position);
 
