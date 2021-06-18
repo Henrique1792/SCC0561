@@ -173,57 +173,141 @@ void IDCT(char **m) {
 
 char *zigzagProcedure(char **tgt) {
 	int i, j, k;
-	i = j = k = 0;
+	int count, col, index;
+	i = j = k = count = col = index = 0;
 
 	char *ret = (char *) malloc(64 * sizeof(char));
+	char tempStore[8];
 
-	ret[k++] = tgt[i][j];
-	do {
-		ret[k++] = tgt[i][++j];
+	count=0,col=0,i,index=0,k=0;
 
-		for (i = i + 1, j = j - 1; j >= 0; j--, i++) {
-			ret[k++] = tgt[i][j];
+//matrix first half
+	for(i=0;i<7;i++)
+	{
+		if(i==0)
+			ret[count++] = tgt[i][i]; 
+
+		if(i > 0)
+		{
+			index=0;
+			for(k=i,col=0;k>=0;k--,col++)
+				tempStore[index++] = tgt[k][col];
+
+			
+			if(i%2==0)
+			{
+				for(k=0;k<index;k++)
+					ret[count++] = tempStore[k]; 
+			}
+			else
+			{
+				for(k=index-1;k >= 0;k--)
+					ret[count++] = tempStore[k]; 
+			}
+
 		}
 
-		i--;
-		j++;
 
-		if (i == 7) {
-			break;
+	}// end of for loop
+
+//matrix second half
+	for(i=0;i<8;i++)
+	{
+
+			index=0;
+			for(k=i,col=7;k<8;k++,col--)
+				tempStore[index++] = tgt[k][col];
+
+			
+			if(i%2==0)
+			{
+				for(k=0;k<index;k++)
+					ret[count++] = tempStore[k]; 
+			}
+			else
+			{
+				for(k=index-1;k >=0;k--)
+					ret[count++] = tempStore[k]; 
+			}
+
+
+	}
+	return ret;
+}
+
+
+char **zigzagUndo(char *zigzagOrder){
+	int j=0,count=0,col=0,i,index=0,k=0,m=0;
+	double tempStore[8];
+
+	char **ret = (char **)malloc(8*sizeof(char *));
+
+	for(i=0; i<8; i++)
+		ret[i] = (char *)malloc(8*sizeof(char));
+
+//get matrix first half
+
+	for(i=0;i<7;i++)
+	{
+		if(i==0)
+			 ret[i][i] = zigzagOrder[count++]; 
+
+		if(i > 0)
+		{
+			index=0;
+			if(i%2==0)
+			{
+				for(k=0,m=i;m>=0;k++,m--)
+				{
+					tempStore[k] = zigzagOrder[count++];
+					index++;
+				}
+			}
+			else
+			{
+				for(k=0,m=i;m>=0;k++,m--)
+				{
+					tempStore[i-k] = zigzagOrder[count++];
+					index++;
+				}
+			}
+
+			for(k=i,col=0;k>=0;k--,col++)
+				  ret[k][col] = tempStore[col];
+
+
 		}
+	}
 
-		ret[k++] = tgt[++i][j];
+//get matrix second half
+	for(i=0;i<8;i++)
+	{		
+			index=0;
+			if(i%2==0)
+			{
+				for(m=i;m<8;m++)
+				{
+					 tempStore[index++] = zigzagOrder[count++];
+				}
+			}
+			else
+			{
+				for(j=0;j<8;j++)
+					tempStore[j]=0;
 
-		for (i = i - 1, j = j + 1; i >= 0; i--, j++) {
-			ret[k++] = tgt[i][j];
-		}
+				for(m=i;m<8;m++)
+				{
+					tempStore[7-m] = zigzagOrder[count++];
+					index++;
+				}
+			}
 
-		i++;
-		j--;
-	} while ((i + j) <= 7);
-
-	do {
-		ret[k++] = tgt[i][++j];
-
-		for(i=i-1,j=j+1; j<7; j++,i--)
-			ret[k++] = tgt[i][j];
-		i++;
-		j--;
-
-		if(j == 7 && i == 7) {
-			break;
-		}
-
-		ret[k++] = tgt[++i][j];
-
-		for (i = i + 1, j = j - 1; i < 7; i++, j--) {
-			ret[k++] = tgt[i][j];
-		}
-
-		i--;
-		j++;
-	} while (i < 7 || j < 7);
-	ret[63] = tgt[7][7];
+			index=0;
+			for(k=i,col=7;k<8;k++,col--)
+				  ret[k][col] = tempStore[index++];
+	}
 
 	return ret;
 }
+
+
