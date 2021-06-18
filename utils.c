@@ -182,54 +182,44 @@ char *zigzagProcedure(char **tgt) {
 	count=0,col=0,i,index=0,k=0;
 
 //matrix first half
-	for(i=0;i<7;i++)
-	{
-		if(i==0)
+	for(i=0; i<7; i++){
+		if(i == 0)
 			ret[count++] = tgt[i][i]; 
 
-		if(i > 0)
-		{
+		if(i > 0){
 			index=0;
-			for(k=i,col=0;k>=0;k--,col++)
+			for(k=i,col=0; k>=0; k--,col++)
 				tempStore[index++] = tgt[k][col];
 
 			
-			if(i%2==0)
-			{
-				for(k=0;k<index;k++)
+			if(i%2==0){
+				for(k=0; k<index; k++)
 					ret[count++] = tempStore[k]; 
 			}
-			else
-			{
-				for(k=index-1;k >= 0;k--)
+			else{
+				for(k=index-1; k >= 0; k--)
 					ret[count++] = tempStore[k]; 
 			}
 
 		}
-
-
-	}// end of for loop
+	}
 
 //matrix second half
-	for(i=0;i<8;i++)
-	{
+	for(i=0;i<8;i++){
 
-			index=0;
-			for(k=i,col=7;k<8;k++,col--)
-				tempStore[index++] = tgt[k][col];
+		index=0;
+		for(k=i,col=7;k<8;k++,col--)
+			tempStore[index++] = tgt[k][col];
 
-			
-			if(i%2==0)
-			{
-				for(k=0;k<index;k++)
-					ret[count++] = tempStore[k]; 
-			}
-			else
-			{
-				for(k=index-1;k >=0;k--)
-					ret[count++] = tempStore[k]; 
-			}
-
+		
+		if(i%2==0){
+			for(k=0;k<index;k++)
+				ret[count++] = tempStore[k]; 
+		}
+		else{
+			for(k=index-1;k >=0;k--)
+				ret[count++] = tempStore[k]; 
+		}
 
 	}
 	return ret;
@@ -246,27 +236,22 @@ char **zigzagUndo(char *zigzagOrder){
 		ret[i] = (char *)malloc(8*sizeof(char));
 
 //get matrix first half
+	for(i=0;i<7;i++){
 
-	for(i=0;i<7;i++)
-	{
 		if(i==0)
 			 ret[i][i] = zigzagOrder[count++]; 
 
-		if(i > 0)
-		{
+		if(i > 0){
+			
 			index=0;
-			if(i%2==0)
-			{
-				for(k=0,m=i;m>=0;k++,m--)
-				{
+			if(i%2==0){
+				for(k=0,m=i;m>=0;k++,m--){
 					tempStore[k] = zigzagOrder[count++];
 					index++;
 				}
 			}
-			else
-			{
-				for(k=0,m=i;m>=0;k++,m--)
-				{
+			else{
+				for(k=0,m=i;m>=0;k++,m--){
 					tempStore[i-k] = zigzagOrder[count++];
 					index++;
 				}
@@ -274,29 +259,24 @@ char **zigzagUndo(char *zigzagOrder){
 
 			for(k=i,col=0;k>=0;k--,col++)
 				  ret[k][col] = tempStore[col];
-
-
 		}
 	}
 
 //get matrix second half
-	for(i=0;i<8;i++)
-	{		
+	for(i=0;i<8;i++){		
+
 			index=0;
-			if(i%2==0)
-			{
-				for(m=i;m<8;m++)
-				{
+			if(i%2==0){
+
+				for(m=i;m<8;m++){
 					 tempStore[index++] = zigzagOrder[count++];
 				}
 			}
-			else
-			{
+			else{
 				for(j=0;j<8;j++)
 					tempStore[j]=0;
 
-				for(m=i;m<8;m++)
-				{
+				for(m=i;m<8;m++){
 					tempStore[7-m] = zigzagOrder[count++];
 					index++;
 				}
@@ -309,5 +289,3 @@ char **zigzagUndo(char *zigzagOrder){
 
 	return ret;
 }
-
-
