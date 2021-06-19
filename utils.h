@@ -37,15 +37,15 @@ typedef struct BitmapHeader {
 //void WImg(BitmapHeader *bmpHeader, PIXEL_T *src);
 
 typedef struct {
-  unsigned int unicode;
-  unsigned char unicodeSize;
+  char *unicode;
+  int unicodeSize;
 } Table_t;
 
 #if 0
 unsigned int decimalToBinary(int Num);
 #endif
 
-char *decimalToBinary(int Num);
+char *decimal2Binary(int Num);
 int binary2int(char *src);
 void BitWrite(FILE *tgt, Table_t *input, int inputSize);
 Table_t *BitRead(FILE *tgt, char *input, int inputSize);

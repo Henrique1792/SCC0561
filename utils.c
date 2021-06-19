@@ -1,7 +1,7 @@
 #include "utils.h"
 
 // função de transformacao de um decimal (negativo ou nao) para binário sem sinal
-char *decimalToBinary(int Num) {
+char *decimal2Binary(int Num) {
 	int tmp[8];
 	int i=0;
 	char *rt=(char *)malloc(8*sizeof(char));
@@ -74,10 +74,10 @@ void BitWrite(FILE *tgt, Table_t *input, int inputSize) {
 }
 
 Table_t *BitRead(FILE *tgt, char *input, int inputSize) {
-	char buffer[10];
-	input = (char *) malloc(10 * sizeof(char));
-	unsigned int tmpUnicode;
-	unsigned char tmpUnicodeSize;
+	char buffer[8];
+	input = (char *) malloc(8 * sizeof(char));
+	int tmpUnicode;
+	char tmpUnicodeSize;
 	int i = 0;
 
 	Table_t *rt = (Table_t *) malloc(inputSize * sizeof(Table_t));
@@ -143,7 +143,6 @@ void DCT(char **m) {
 		}
 	}
 
-	//don't forget to free this RES!
 	for (int i = 0; i < 8; i++) {
 		free(res[i]);
 	}
