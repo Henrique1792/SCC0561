@@ -1,7 +1,22 @@
 #include "utils.h"
 
 // função de transformacao de um decimal (negativo ou nao) para binário sem sinal
-unsigned int decimalToBinary(int Num) {
+char *decimalToBinary(int Num) {
+	int tmp[8];
+	int i=0;
+	char *rt=(char *)malloc(8*sizeof(char));
+
+
+	int mask = 0x80; /* 10000000 */
+	while(mask > 0){
+		tmp[i++]= ((Num & mask) > 0);
+		mask >>= 1;
+	}
+	for(i=0;i<8;i++)
+		sprintf(&rt[i], "%d", tmp[i]);
+	return rt;
+
+#if 0
     int binaryNum = 0;
     int counter = 0;
     while (Num != 0) {
@@ -14,13 +29,23 @@ unsigned int decimalToBinary(int Num) {
 
 	// retornando binario sem sinal
 	return abs(binaryNum);
+#endif
 }
 
 int binary2int(char *src) {
+	int root;
 	int rt=0;
+	int i=0;
 
-	sscanf(src, "%d", &rt);
-	return rt;
+	root = atoi(src);
+
+	for(i=0; i<8; i++){
+		if(root%10)
+			rt+=pow(2,i);
+	}
+	
+	
+	return root;
 }
 
 /*
@@ -35,12 +60,16 @@ void BitWrite(FILE *tgt, Table_t *input, int inputSize) {
 	int i = 0;
 
 	for (i = 0; i < inputSize; i++) {
+
 		//writing unicode
         sprintf(buffer, "%d", input[i].unicode);
-        fwrite(buffer , 1 , sizeof(buffer) , tgt);
+		printf("buffer: %s\n", buffer);
+        fwrite(buffer , sizeof(buffer), 1, tgt);
+
 		//writing size
         sprintf(buffer, "%c", input[i].unicodeSize);
-        fwrite(buffer , 1 , sizeof(buffer) , tgt);
+		printf("bufferSize: %s\n", buffer);
+        fwrite(buffer , sizeof(buffer), 1 , tgt);
 	}
 }
 
@@ -110,7 +139,7 @@ void DCT(char **m) {
 
 	for (i = 0; i < 8; i++) {
 		for(j = 0 ; j < 8; j++) {
-			m[i][j] = floor((char) (res[i][j]));
+			m[i][j] = (char)(ceil(res[i][j]));
 		}
 	}
 
@@ -178,8 +207,6 @@ char *zigzagProcedure(char **tgt) {
 
 	char *ret = (char *) malloc(64 * sizeof(char));
 	char tempStore[8];
-
-	count=0,col=0,i,index=0,k=0;
 
 //matrix first half
 	for(i=0; i<7; i++){

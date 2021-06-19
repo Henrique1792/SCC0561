@@ -85,7 +85,6 @@ int main(int argc, char *argv[]){
 
 
 	//declarations
-	//
 	// img/file strucuture
 	BitmapHeader *bmpHeader;
 	PIXEL_T *img; int imgPosition = 0;
@@ -132,7 +131,6 @@ int main(int argc, char *argv[]){
 		printf("USAGE: <compression||decompression> <imgname||compressed_filename>\n");
 		exit(1);
 	}
-	printf("OPERATION: %s\tFILE FOUND: %s\n", argv[1],argv[2]);
 
 	if(!strcmp(argv[1], "compression")){
 	//BitmapHeader
@@ -164,14 +162,15 @@ int main(int argc, char *argv[]){
 		BEGINBMP(src, bmpHeader->bfOffBits);
 		loadBMP(bmpHeader, src, img);
 
+		//slashing our image into a vector of 8x8 matrix
+		bmpSlashSquares(img, bmpHeader->biWidth, bmpHeader->biHeight, 
+				((bmpHeader->biWidth)*(bmpHeader->biHeight)), &fullSquares);
+
 		vectorSize = ((bmpHeader->biWidth/8)*(bmpHeader->biHeight/8));
 		matrixR = (char ***)malloc(vectorSize*sizeof(char **));
 		matrixG = (char ***)malloc(vectorSize*sizeof(char **));
 		matrixB = (char ***)malloc(vectorSize*sizeof(char **));
 
-		//slashing our image into a vector of 8x8 matrix
-		bmpSlashSquares(img, bmpHeader->biWidth, bmpHeader->biHeight, 
-				((bmpHeader->biWidth)*(bmpHeader->biHeight)), &fullSquares);
 
 		for(i=0 ; i < vectorSize; i++){
 				matrixR[i]=(char **)malloc(8*sizeof(char *));
@@ -211,7 +210,6 @@ int main(int argc, char *argv[]){
 			DCT(matrixB[i]);
 		}
 
-
 		//quantization + zigzag scan!
 		for(k=0; k < fullSquares; k++){
 			for(i=0; i<8; i++){
@@ -229,9 +227,9 @@ int main(int argc, char *argv[]){
 
 
 		for(i = 0; i < fullSquares ; i++){
-			zzScanR[i] = zigzagProcedure(matrixR[i]);
-			zzScanG[i] = zigzagProcedure(matrixG[i]);
 			zzScanB[i] = zigzagProcedure(matrixB[i]);
+			zzScanG[i] = zigzagProcedure(matrixG[i]);
+			zzScanR[i] = zigzagProcedure(matrixR[i]);
 		}
 
 		//RLE+huffman
@@ -246,9 +244,9 @@ int main(int argc, char *argv[]){
 		deltaInputR = (char *)calloc(fullSquares, sizeof(char));
 
 		for(i=0 ; i<fullSquares;i++){
-			deltaInputR[i] = zzScanR[i][0];
-			deltaInputG[i] = zzScanG[i][0];
 			deltaInputB[i] = zzScanB[i][0];
+			deltaInputG[i] = zzScanG[i][0];
+			deltaInputR[i] = zzScanR[i][0];
 		}
 
 
@@ -291,15 +289,18 @@ int main(int argc, char *argv[]){
 
 		
 		for(i=0; i<fullSquares; i++){
-			fwrite(rleVectorsB[i], sizeof(rleVectorsB[i]), 1, outfile);
-			fwrite(rleVectorsG[i], sizeof(rleVectorsG[i]), 1, outfile);
-			fwrite(rleVectorsR[i], sizeof(rleVectorsR[i]), 1, outfile);
+			fwrite(rleVectorsB[i],64, 1, outfile);
+			fwrite(rleVectorsG[i],64, 1, outfile);
+			fwrite(rleVectorsR[i],64, 1, outfile);
 		}
 
 	}else{
 		if(!strcmp(argv[1],"decompression")){
 			bmpHeader = createBitmapHeader();
 			src=fopen(argv[2], "rb");
+			//recovering header content
+			fillBitmapHeader(src, bmpHeader);
+			printBitmapHeader(bmpHeader);
 
 			if(bmpHeader->biHeight % 8 != 0 ||
 			   bmpHeader->biWidth % 8 != 0 ||
@@ -315,9 +316,6 @@ int main(int argc, char *argv[]){
 				exit(1);
 			}
 
-			//recovering header content
-			fillBitmapHeader(src, bmpHeader);
-			printBitmapHeader(bmpHeader);
 			vectorSize = ((bmpHeader->biWidth/8)*(bmpHeader->biHeight/8));
 			
 			//We'll use fullSquares for partition
@@ -337,9 +335,9 @@ int main(int argc, char *argv[]){
 			rleVectorsG = (char **)malloc(fullSquares*sizeof(char));
 			rleVectorsR = (char **)malloc(fullSquares*sizeof(char));
 
-			rleVectorDecompressB = (char *)malloc(2*sizeof(char));
-			rleVectorDecompressG = (char *)malloc(2*sizeof(char));
-			rleVectorDecompressR = (char *)malloc(2*sizeof(char));
+			rleVectorDecompressB = (char *)malloc((2*fullSquares)*sizeof(char));
+			rleVectorDecompressG = (char *)malloc((2*fullSquares)*sizeof(char));
+			rleVectorDecompressR = (char *)malloc((2*fullSquares)*sizeof(char));
 
 
 			int posB, posG, posR;
@@ -409,9 +407,9 @@ int main(int argc, char *argv[]){
 				zzScanG[i] = (char *)malloc(vectorSize*sizeof(char));
 				zzScanR[i] = (char *)malloc(vectorSize*sizeof(char));
 				
-				zzScanB[i][0] = binary2int(deltaB[i].unicode);
-				zzScanG[i][0] = binary2int(deltaG[i].unicode);
-				zzScanR[i][0] = binary2int(deltaR[i].unicode);
+				zzScanB[i][0] = binary2int((char *)&deltaB[i].unicode);
+				zzScanG[i][0] = binary2int((char *)&deltaG[i].unicode);
+				zzScanR[i][0] = binary2int((char *)&deltaR[i].unicode);
 				
 				for(j = 1; j < fullSquares; j++){
 					zzScanB[i][j] = rleVectorsB[i][j-1];
@@ -477,7 +475,16 @@ int main(int argc, char *argv[]){
 
 			}
 
-		//write new fileimg
+			//write new fileimg
+			outfile = fopen("extracted.bin", "wb");
+			writeBitmapHeader(bmpHeader, outfile);
+			
+			for(i=0;i<(bmpHeader->biHeight*bmpHeader->biWidth); i++){
+				fwrite(&img[i].B, sizeof(unsigned char), 1, outfile);
+				fwrite(&img[i].G, sizeof(unsigned char), 1, outfile);
+				fwrite(&img[i].R, sizeof(unsigned char), 1, outfile);
+
+			}
 
 		}
 	}

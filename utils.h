@@ -41,7 +41,11 @@ typedef struct {
   unsigned char unicodeSize;
 } Table_t;
 
+#if 0
 unsigned int decimalToBinary(int Num);
+#endif
+
+char *decimalToBinary(int Num);
 int binary2int(char *src);
 void BitWrite(FILE *tgt, Table_t *input, int inputSize);
 Table_t *BitRead(FILE *tgt, char *input, int inputSize);
@@ -50,6 +54,7 @@ void DCT(char **m);
 void IDCT(char **m);
 
 char *zigzagProcedure(char **tgt);
+char **zigzagUndo(char *zigzagOrder);
 
 //util quicksorting colors
 //it sorts both repetition and color vector
