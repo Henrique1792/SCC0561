@@ -366,9 +366,9 @@ int main(int argc, char *argv[]){
 
 
 			for(i = 0; i < fullSquares ; i++){
-				*zzScanB[i] = (char)deltaB[i].unicode;
-				*zzScanG[i] = (char)deltaG[i].unicode;
-				*zzScanR[i] = (char)deltaR[i].unicode;
+				*zzScanB[i] = *deltaB[i].unicode;
+				*zzScanG[i] = *deltaG[i].unicode;
+				*zzScanR[i] = *deltaR[i].unicode;
 
 
 				for(j=1;j<fullSquares;j++){

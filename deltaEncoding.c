@@ -5,25 +5,29 @@ const unsigned char prefixTable[9] = {2,   3,   4,   0,  5,   6,   14,   30,    
 const unsigned char prefixTableSize[9] = {3,   3,   3,   2,  3,   3,   4,    5,      6};
 
 Table_t *deltaEncoding(char *vector, int vectorSize) {
-	int i=0, j=0, tam=0;
-	int old_binary[vectorSize];
-	char buffer[10] = {0};
+	int i=0, j=0;
 	int vectorInt[vectorSize];
 	int diff_vectorInt[vectorSize];
 	Table_t *rt;
-	int *diff_vector;
-	char **binary_vector;
 
 	//load content as int
 	for (i = 0; i < vectorSize; i++) {
 		vectorInt[i] = (int) vector[i];
 	}
 
+	rt = (Table_t*)malloc(vectorSize*sizeof(Table_t));
+	diff_vectorInt[0]=vectorInt[0];
+	rt[0].unicode = decimal2Binary(vectorInt[0]);
+	rt[0].unicodeSize = strlen(rt[0].unicode);
+	rt[j].diff = 0; //nothing before it - we'll set it as 0
 
-	diff_vector[0]=0;
 	for(i = 0, j=1; j < vectorSize; i++, j++){
-		diff_vector[j] = vectorInt[j] - vectorInt[i];
+		rt[j].unicode = decimal2Binary(vectorInt[j]);
+		diff_vectorInt[j] = vectorInt[j] - vectorInt[i];
+		rt[j].unicodeSize = strlen(rt[j].unicode);
+		rt[j].diff = diff_vectorInt[j];
 	}
+	return rt;
 
 #if 0
 
@@ -54,8 +58,6 @@ Table_t *deltaEncoding(char *vector, int vectorSize) {
 	//
 
 	//free_content
-	free(diff_vector);
-	free(binary_vector);
 
 	return rt;
 }

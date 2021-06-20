@@ -1,5 +1,8 @@
 # SCC0561
 
+##Trabalho 1
+Henrique F. M. Freitas (8937225)
+
 Simple BMP img compressor/decompressor
 
 ## Compilation
@@ -12,11 +15,7 @@ open a terminal inside root folder and run `make`
 
 ## usage
 
-`./T1 <compression || decompression> <bmp_imgname>`
+`./T1 <compression || decompression> <bmp_imgname||out.bin>`
 
 compressed file will be generated as `out.bin` file!
-
-
-##attention
-decompressed file will have _the same name_ as the original one, so, please, don't decompress
-it in the same folder
+decompression file wil be generated as `extracted.bin`

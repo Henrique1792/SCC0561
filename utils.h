@@ -39,6 +39,7 @@ typedef struct BitmapHeader {
 typedef struct {
   char *unicode;
   int unicodeSize;
+  int diff; //diff with previous unicode
 } Table_t;
 
 #if 0

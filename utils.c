@@ -56,25 +56,22 @@ int binary2int(char *src) {
 */
 
 void BitWrite(FILE *tgt, Table_t *input, int inputSize) {
-	char buffer[10];
+	char buffer[8];
 	int i = 0;
 
 	for (i = 0; i < inputSize; i++) {
 
 		//writing unicode
-        sprintf(buffer, "%d", input[i].unicode);
-		printf("buffer: %s\n", buffer);
-        fwrite(buffer , sizeof(buffer), 1, tgt);
+        fwrite(input[i].unicode , sizeof(buffer), 1, tgt);
 
 		//writing size
-        sprintf(buffer, "%c", input[i].unicodeSize);
-		printf("bufferSize: %s\n", buffer);
+        sprintf(buffer, "%d", input[i].unicodeSize);
         fwrite(buffer , sizeof(buffer), 1 , tgt);
 	}
 }
 
 Table_t *BitRead(FILE *tgt, char *input, int inputSize) {
-	char buffer[8];
+	char buffer[8] = {0};
 	input = (char *) malloc(8 * sizeof(char));
 	int tmpUnicode;
 	char tmpUnicodeSize;
@@ -82,17 +79,13 @@ Table_t *BitRead(FILE *tgt, char *input, int inputSize) {
 
 	Table_t *rt = (Table_t *) malloc(inputSize * sizeof(Table_t));
 
-	for (i = 0; i < inputSize; i++) {
-        fread(buffer , 1 , sizeof(buffer) , tgt);
-        sscanf(buffer, "%s", input);
+	for (i = 0; i < inputSize-1; i++) {
+        fread(buffer , sizeof(buffer), 1, tgt);
 		tmpUnicode = binary2int(buffer);
-		rt[i].unicode = tmpUnicode;
+		rt[i].unicode = decimal2Binary(tmpUnicode);
 
 		//reading unicodeSize
-        fread(buffer , 1 , sizeof(buffer) , tgt);
-        sscanf(buffer, "%s", input);
-		tmpUnicodeSize = binary2int(buffer);
-		rt[i].unicodeSize = tmpUnicodeSize;
+		fread(&rt[i].unicodeSize, sizeof(rt[i].unicodeSize), 1, tgt); 
 	}
 
 	free(input);
